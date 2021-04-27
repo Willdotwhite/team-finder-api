@@ -4,8 +4,20 @@ Kotlin application used to drive the GMTK Jam Team Finder website!
 
 A simple JSON REST API for what is basically a BREAD app.
 
+## Getting Started
 
-## API (Draft 1.0, very WIP)
+### Running it in an editor/IDE
+
+#### IntelliJ (or similar like Android Studio)
+
+- Open the `settings.gradle.kts` file, it will prompt you to open it as a project or a file, choose project.
+- Find the main function and click on the play button next to it or open the gradle toolwindow and use `team-finder-api > app > Tasks > application > bootRun`
+
+### Running from the command line
+
+`gradlew.bat bootRun`
+
+## API (Draft 1.0, very WIlP)
 
 TODO: Convet to Swagger docs
 
