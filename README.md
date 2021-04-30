@@ -12,10 +12,15 @@ A simple JSON REST API for what is basically a BREAD app.
 
 - Open the `settings.gradle.kts` file, it will prompt you to open it as a project or a file, choose project.
 - Find the main function and click on the play button next to it or open the gradle toolwindow and use `team-finder-api > app > Tasks > application > bootRun`
+- When running using the main function a profile can be set by opening the run configuration and adding the profile to the `acitve profiles` input
 
 ### Running from the command line
 
 `gradlew.bat bootRun`
+
+To run with the dev profile (or other `,` separated) add the `-Dspring.profiles.active=dev` command line argument.
+This will launch Spring with the configured profiles which would run code associated with said profile.
+Right now it is used for the TeamSeeder
 
 ## API (Draft 1.0, very WIlP)
 
