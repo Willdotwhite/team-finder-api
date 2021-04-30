@@ -32,13 +32,13 @@ jobs:
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
         shell: bash
         env:
-          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
-          SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
       - name: Deploy to server
         run: |
-          scp ${{ github.workspace }}/app.jar pipeline@178.62.53.195:${{API_JAR_LOCATION}}
+          scp ${{ github.workspace }}/app.jar pipeline@178.62.53.195:${{ secrets.API_JAR_LOCATION }}
           systemctl restart team-finder-api.service
         shell: bash
         env:
