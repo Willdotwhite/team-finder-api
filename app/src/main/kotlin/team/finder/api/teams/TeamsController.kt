@@ -9,9 +9,12 @@ class TeamsController(val service: TeamsService) {
     @GetMapping("/teams")
     fun index() : MutableIterable<Team> = service.getTeams()
 
+    @PostMapping("/teams")
+    fun add(@RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))
+
     @GetMapping("/teams/{id}")
     fun view(@PathVariable id: Long) : Optional<Team> = service.getTeamById(id)
 
-    @PostMapping("/teams")
-    fun add(@RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))
+    @PutMapping("/teams/{id}")
+    fun update(@PathVariable id: Long, @RequestBody teamDto: TeamDto) = service.updateTeam(id, teamDto.name)
 }
