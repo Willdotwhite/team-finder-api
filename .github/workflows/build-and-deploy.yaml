@@ -22,7 +22,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: app.jar
-          path: ${{ github.workspace }}/app.jar
+          path: ${{ github.workspace }}/app/build/libs/app.jar
 
       - name: Create SSH key
         run: |
@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          scp ${{ github.workspace }}/app.jar pipeline@178.62.53.195:${{ secrets.API_JAR_LOCATION }}
+          scp ${{ github.workspace }}/app/build/libs/app.jar pipeline@178.62.53.195:${{ secrets.API_JAR_LOCATION }}
           systemctl restart team-finder-api.service
         shell: bash
         env:
