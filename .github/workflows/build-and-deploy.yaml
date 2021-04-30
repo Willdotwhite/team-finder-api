@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -19,7 +21,7 @@ jobs:
 
       - run: ./gradlew build && ./gradlew jar
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Package
-          path: build/libs
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
