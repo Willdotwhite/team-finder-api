@@ -1,3 +1,7 @@
 package team.finder.api.teams
 
-class TeamDto(val name: String, val skillsetMask: Int)
+class TeamDto(
+    var author: String,
+    var description: String,
+    var skillsetMask: Int,
+)
