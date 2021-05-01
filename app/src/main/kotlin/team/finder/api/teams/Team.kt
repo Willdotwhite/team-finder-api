@@ -9,7 +9,7 @@ class Team(
     var author: String,
     var description: String,
     var skillsetMask: Int,
-    @Id @GeneratedValue var id: Long? = null
+    @Id var id: Long? = null
 ) {
     constructor(a: String, d: String, s: Int) : this(a, d, s, 0)
 
