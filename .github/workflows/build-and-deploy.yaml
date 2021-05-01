@@ -38,7 +38,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          scp -i ${{ github.workspace }}/private.key ${{ github.workspace }}/app/build/libs/app.jar pipeline@178.62.53.195:${{ secrets.API_JAR_LOCATION }}
+          scp -i ${{ github.workspace }}/private.key ${{ github.workspace }}/app/build/libs/app.jar pipeline@${{ secrets.SSH_HOST }}:${{ secrets.API_JAR_LOCATION }}
         shell: bash
-        env:
-          SSH_KEY_PATH: ${{ github.workspace }}/private.key
+
+      - name: Restart application
+        run: |
+          ssh pipeline@${{ secrets.SSH_HOST }} -i ${{ github.workspace }}/private.key 'sudo /bin/systemctl restart team-finder-api.service'
+        shell: bash
