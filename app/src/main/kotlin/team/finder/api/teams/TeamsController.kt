@@ -22,6 +22,7 @@ class TeamsController(val service: TeamsService) {
     @GetMapping("/teams/{id}")
     fun view(@PathVariable id: Long) : Optional<Team> = service.getTeamById(id)
 
+    // TODO: Only changed fields
     @PutMapping("/teams/{id}")
-    fun update(@PathVariable id: Long, @RequestBody teamDto: TeamDto) = service.updateTeam(id, teamDto.name)
+    fun update(@PathVariable id: Long, @RequestBody teamDto: TeamDto) = service.updateTeam(id, teamDto.author, teamDto.description, teamDto.skillsetMask)
 }
