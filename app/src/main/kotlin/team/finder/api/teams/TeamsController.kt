@@ -14,7 +14,7 @@ class TeamsController(val service: TeamsService) {
     }
 
     @GetMapping("/teams")
-    fun index() : MutableIterable<Team> = service.getTeams()
+    fun index() : List<Team> = service.getTeams()
 
     @PostMapping("/teams")
     fun add(@RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))
@@ -25,4 +25,7 @@ class TeamsController(val service: TeamsService) {
     // TODO: Only changed fields
     @PutMapping("/teams/{id}")
     fun update(@PathVariable id: Long, @RequestBody teamDto: TeamDto) = service.updateTeam(id, teamDto.author, teamDto.description, teamDto.skillsetMask)
+
+    @DeleteMapping("/teams/{id}")
+    fun delete(@PathVariable id: Long) : Team? = service.deleteTeam(id)
 }
