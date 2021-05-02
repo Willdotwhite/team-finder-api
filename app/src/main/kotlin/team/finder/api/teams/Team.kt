@@ -1,7 +1,6 @@
 package team.finder.api.teams
 
 import javax.persistence.Entity
-import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
 @Entity
@@ -9,9 +8,17 @@ class Team(
     var author: String,
     var description: String,
     var skillsetMask: Int,
-    @Id var id: Long? = null
+
+    // Managed by DB
+    val createdAt: String,
+    var updatedAt: String,
+    var deletedAt: String,
+
+    @Id val id: Long
 ) {
-    constructor(a: String, d: String, s: Int) : this(a, d, s, 0)
+
+    constructor(_author: String, _description: String, _skillsetMask: Int) :
+            this(_author, _description, _skillsetMask, "", "", "", 0)
 
     constructor() : this("", "", 1)
 
