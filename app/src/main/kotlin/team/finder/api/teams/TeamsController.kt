@@ -14,7 +14,7 @@ class TeamsController(val service: TeamsService) {
     }
 
     @GetMapping("/teams")
-    fun index() : List<Team> = service.getTeams()
+    fun index(@RequestParam skillsetMask: Int?) : List<Team> = service.getTeams(skillsetMask)
 
     @PostMapping("/teams")
     fun add(@RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))

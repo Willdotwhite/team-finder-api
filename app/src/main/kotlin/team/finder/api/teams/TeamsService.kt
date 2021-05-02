@@ -10,8 +10,17 @@ class TeamsService(val repository: TeamsRepository) {
 
     fun createTeam(team: Team) = repository.save(team)
 
-    fun getTeams(): List<Team> {
-        return repository.findAll().filter { team -> team?.deletedAt.equals(null) }
+    fun getTeams(skillsetMask: Int?): List<Team> {
+        var records = repository.findAll().filter { team -> team?.deletedAt.equals(null) }
+
+        if (skillsetMask != null) {
+            // Remove all records that don't match the skillsetMask provided
+            // In the case where skillsetMask is multiple roles,
+            // this will return all teams asking for _both_, not _either_
+            records = records.filter { team -> (team.skillsetMask and skillsetMask) == skillsetMask }
+        }
+
+        return records
     }
 
     fun getTeamById(id: Long): Optional<Team> = repository.findById(id).filter { team -> team?.deletedAt.equals(null) }
