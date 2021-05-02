@@ -5,13 +5,10 @@ import java.util.*
 import javax.servlet.http.HttpServletResponse
 
 
+//        this isn't ideal but it's kind of fine, it means anybody can use the API from a locally hosted webpage
+@CrossOrigin("localhost:3000")
 @RestController
 class TeamsController(val service: TeamsService) {
-    @ModelAttribute
-    fun setResponseHeader(response: HttpServletResponse) {
-//        this isn't ideal but it's kind of fine, it means anybody can use the API from a locally hosted webpage
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
-    }
 
     @GetMapping("/teams")
     fun index(@RequestParam skillsetMask: Int?) : List<Team> = service.getTeams(skillsetMask)
