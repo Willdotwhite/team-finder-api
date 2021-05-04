@@ -2,8 +2,10 @@ package team.finder.api.teams
 
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
+@Table(name = "team")
 class Team(
     var author: String,
     var description: String,
