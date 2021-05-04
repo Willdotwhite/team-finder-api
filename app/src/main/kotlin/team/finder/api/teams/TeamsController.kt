@@ -1,5 +1,7 @@
 package team.finder.api.teams
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.servlet.http.HttpServletResponse
@@ -9,7 +11,18 @@ import javax.validation.Valid
 class TeamsController(val service: TeamsService) {
 
     @GetMapping("/teams")
-    fun index(@RequestParam skillsetMask: Int?) : List<Team> = service.getTeams(skillsetMask)
+    fun index(@RequestParam(defaultValue = "1") page: Int, @RequestParam skillsetMask: Int?) : List<Team> {
+
+        // Pagination needs to be offset by -1 from expectations, but can't be set below 0
+        val pageIdx = if (page > 0) page else 1
+        val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, 50)
+
+        return if (skillsetMask?.equals(null) == false) {
+            service.getTeams(queryPageable, skillsetMask)
+        } else {
+            service.getTeams(queryPageable)
+        }
+    }
 
     @PostMapping("/teams")
     fun add(@Valid @RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))
