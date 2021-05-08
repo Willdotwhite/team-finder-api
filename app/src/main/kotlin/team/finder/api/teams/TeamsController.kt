@@ -1,13 +1,12 @@
 package team.finder.api.teams
 
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.*
 import java.util.*
-import javax.servlet.http.HttpServletResponse
 import javax.validation.Valid
 
 @RestController
+@CrossOrigin
 class TeamsController(val service: TeamsService) {
 
     @GetMapping("/teams")

@@ -1,32 +1,44 @@
 package team.finder.api.auth
 
-import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.JWSHeader
-import com.nimbusds.jose.JWSObject
-import com.nimbusds.jose.Payload
+import com.nimbusds.jose.*
 import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.web.util.UriComponentsBuilder
 import team.finder.api.utils.CookieUtils
-import java.security.SecureRandom
+import java.time.Instant
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler() {
+
+    @Value("${jwt.secret}")
+    val secret: String? = null
+
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
         if (response?.isCommitted == true) {
             println("Response has already been committed.");
             return;
         }
 
-        val jwsObj = JWSObject(JWSHeader(JWSAlgorithm.HS256), Payload("Test"))
-        val sharedKey = ByteArray(32)
-        SecureRandom().nextBytes(sharedKey)
-        jwsObj.sign(MACSigner(sharedKey))
-        val serialize = jwsObj.serialize()
+        if (authentication?.principal == null || authentication.principal !is CustomUserDetails) {
+            println("Something went wrong while authenticating. Please try again");
+            return;
+        }
+        val id = (authentication.principal as CustomUserDetails).attributes["id"].toString().toLong()
 
-        val uri = UriComponentsBuilder.fromUriString("http://localhost:8080/teams")
+        val claimsBuilder = JWTClaimsSet.Builder()
+        claimsBuilder.claim("id", id)
+        claimsBuilder.claim("iat", Instant.now().epochSecond)
+        val token = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claimsBuilder.build())
+
+        token.sign(MACSigner("secretttttttttttttttttttttttttttttttt"))
+        val serialize = token.serialize()
+
+        val uri = UriComponentsBuilder.fromUriString("http://localhost:3000/login/authorized")
                 .queryParam("token", serialize)
                 .build()
                 .toUriString()
