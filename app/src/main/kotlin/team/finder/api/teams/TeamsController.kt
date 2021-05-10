@@ -1,5 +1,8 @@
 package team.finder.api.teams
 
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Metrics
+import io.micrometer.core.instrument.Timer
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -9,18 +12,29 @@ import javax.validation.Valid
 @CrossOrigin
 class TeamsController(val service: TeamsService) {
 
+    val queryCounter: Counter = Metrics.counter("teams.counter")
+    val queryTimer: Timer = Metrics.timer("teams.query")
+
     @GetMapping("/teams")
     fun index(@RequestParam(defaultValue = "1") page: Int, @RequestParam skillsetMask: Int?) : List<Team> {
+        queryCounter.increment()
+
+        val pageIdx = if (page > 0) page else 1
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
-        val pageIdx = if (page > 0) page else 1
         val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, 50)
 
-        return if (skillsetMask?.equals(null) == false) {
-            service.getTeams(queryPageable, skillsetMask)
-        } else {
-            service.getTeams(queryPageable)
+        var teams: List<Team> = listOf()
+
+        queryTimer.record {
+            teams = if (skillsetMask?.equals(null) == false) {
+                service.getTeams(queryPageable, skillsetMask)
+            } else {
+                service.getTeams(queryPageable)
+            }
         }
+
+        return teams;
     }
 
     @PostMapping("/teams")

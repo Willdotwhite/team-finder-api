@@ -44,6 +44,8 @@ dependencies {
     implementation("org.springframework:spring-webmvc")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
 
+    implementation("io.micrometer:micrometer-registry-jmx:latest.release")
+
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java")
 
