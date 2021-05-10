@@ -3,15 +3,24 @@
  */
 package team.finder.api
 
+import io.micrometer.core.instrument.Clock
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Metrics
+import io.micrometer.jmx.JmxConfig
+import io.micrometer.jmx.JmxMeterRegistry
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
+
 
 @SpringBootApplication
 class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
+
+    @Bean
+    fun init() {
+        val registry: MeterRegistry = JmxMeterRegistry(JmxConfig.DEFAULT, Clock.SYSTEM)
+        Metrics.addRegistry(registry)
+    }
 }
 
 fun main() {
