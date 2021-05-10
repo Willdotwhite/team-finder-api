@@ -1,5 +1,7 @@
 package team.finder.api.auth
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest
 import org.springframework.util.Base64Utils
@@ -12,13 +14,26 @@ import kotlin.reflect.cast
 
 class HttpCookieOAuth2AuthorizationRequestRepository : AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
+    private val logger: Logger = LoggerFactory.getLogger(HttpCookieOAuth2AuthorizationRequestRepository::class.java)
+
     private val requestCookieName: String = "auth_req"
     private val redirectCookieName: String = "redirect_uri"
     private val maxAge: Int = 120
 
     override fun loadAuthorizationRequest(request: HttpServletRequest?): OAuth2AuthorizationRequest {
-        val data = request?.cookies?.find { it.name == requestCookieName }?.value?.let { Base64Utils.decodeFromString(it) }
-        return OAuth2AuthorizationRequest::class.cast(SerializationUtils.deserialize(data))
+        val cookies = request?.cookies
+        logger.warn("AUTH_REQ cookie: " + cookies.toString())
+
+        val authReqCookie = cookies?.find { it.name == requestCookieName }?.value
+        logger.warn("AUTH_REQ authReq: " + authReqCookie.toString())
+
+        val serData = authReqCookie?.let { Base64Utils.decodeFromString(it) }
+        logger.warn("AUTH_REQ serData: " + serData.toString())
+
+        val data = SerializationUtils.deserialize(serData)
+        logger.warn("AUTH_REQ data: " + data.toString())
+
+        return OAuth2AuthorizationRequest::class.cast(data)
     }
 
     override fun saveAuthorizationRequest(authorizationRequest: OAuth2AuthorizationRequest?, request: HttpServletRequest?, response: HttpServletResponse?) {
