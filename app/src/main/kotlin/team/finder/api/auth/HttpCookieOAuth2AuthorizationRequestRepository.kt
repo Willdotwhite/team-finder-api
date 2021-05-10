@@ -5,7 +5,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.util.Base64Utils
 import org.springframework.util.SerializationUtils
 import team.finder.api.utils.CookieUtils
-import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -38,7 +37,7 @@ class HttpCookieOAuth2AuthorizationRequestRepository : AuthorizationRequestRepos
         val authCookie = Cookie(requestCookieName, SerializationUtils.serialize(authorizationRequest)?.let { Base64Utils.encodeToString(it) })
         authCookie.maxAge = maxAge
         authCookie.path = "/"
-//        authCookie.secure = true
+        authCookie.secure = true
         response?.addCookie(authCookie)
 
         request?.getParameter("redirect_uri")?.let { println(it) }
