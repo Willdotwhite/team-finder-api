@@ -18,6 +18,9 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
     @Value("${jwt.secret}")
     val secret: String? = null
 
+    @Value("{server.uiDomain}")
+    val uiDomain: String? = null
+
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
         if (response?.isCommitted == true) {
             println("Response has already been committed.");
@@ -38,7 +41,7 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
         token.sign(MACSigner("secretttttttttttttttttttttttttttttttt"))
         val serialize = token.serialize()
 
-        val uri = UriComponentsBuilder.fromUriString("http://localhost:3000/login/authorized")
+        val uri = UriComponentsBuilder.fromUriString(uiDomain!! + "/login/authorized")
                 .queryParam("token", serialize)
                 .build()
                 .toUriString()
