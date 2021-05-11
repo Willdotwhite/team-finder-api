@@ -22,7 +22,7 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
     @Value("\${jwt.secret}")
     val secret: String? = null
 
-    @Value("\${server.uiDomain}")
+    @Value("${server.uiDomain}")
     val uiDomain: String = ""
 
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
