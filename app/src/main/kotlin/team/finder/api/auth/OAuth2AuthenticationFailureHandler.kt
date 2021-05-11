@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse
 
 class OAuth2AuthenticationFailureHandler : SimpleUrlAuthenticationFailureHandler() {
 
-    @Value("${server.uiDomain}")
-    val uiDomain: String = ""
+    @Value("\${server.uiDomain}")
+    val uiDomain: String = "https://teamfinder.gmtkgamejam.com"
 
     override fun onAuthenticationFailure(
         request: HttpServletRequest?,

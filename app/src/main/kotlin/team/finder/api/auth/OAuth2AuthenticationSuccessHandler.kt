@@ -22,8 +22,8 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
     @Value("\${jwt.secret}")
     val secret: String? = null
 
-    @Value("${server.uiDomain}")
-    val uiDomain: String = ""
+    @Value("\${server.uiDomain}")
+    val uiDomain: String = "https://teamfinder.gmtkgamejam.com"
 
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
         if (response?.isCommitted == true) {
