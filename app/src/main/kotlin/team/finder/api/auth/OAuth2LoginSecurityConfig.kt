@@ -46,9 +46,11 @@ class OAuth2LoginSecurityConfig : WebSecurityConfigurerAdapter() {
                 .successHandler(OAuth2AuthenticationSuccessHandler())
                 .failureHandler(OAuth2AuthenticationFailureHandler())
 
-        jwtRequestFilter?.addIgnoredPatterns("/error", "/login/oauth2/code/discord")
+        jwtRequestFilter?.addIgnoredPatterns("/error")
+        jwtRequestFilter?.addIgnoredPatterns("/login/*")
         jwtRequestFilter?.addIgnoredPatterns("/_system")
         jwtRequestFilter?.addIgnoredPatterns(Pair("/teams", HttpMethod.GET))
+
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
     }
 

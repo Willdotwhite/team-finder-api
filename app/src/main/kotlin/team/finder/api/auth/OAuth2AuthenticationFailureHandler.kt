@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse
 class OAuth2AuthenticationFailureHandler : SimpleUrlAuthenticationFailureHandler() {
 
     @Value("\${server.uiDomain}")
-    val uiDomain: String? = null
+    val uiDomain: String = "https://teamfinder.gmtkgamejam.com"
 
     override fun onAuthenticationFailure(
         request: HttpServletRequest?,
@@ -24,7 +24,7 @@ class OAuth2AuthenticationFailureHandler : SimpleUrlAuthenticationFailureHandler
 
         val errDescription = request?.getParameter("error_description")
 
-        val uri = UriComponentsBuilder.fromUriString(uiDomain!! + "/login/failed")
+        val uri = UriComponentsBuilder.fromUriString("$uiDomain/login/failed")
             .queryParam("error_description", errDescription)
             .build()
             .toUriString()
