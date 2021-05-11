@@ -33,7 +33,10 @@ class HttpCookieOAuth2AuthorizationRequestRepository : AuthorizationRequestRepos
         val data = SerializationUtils.deserialize(serData)
         logger.warn("AUTH_REQ data: " + data.toString())
 
-        return OAuth2AuthorizationRequest::class.cast(data)
+        val req: OAuth2AuthorizationRequest = OAuth2AuthorizationRequest::class.cast(data)
+        logger.warn("AUTH_REQ redirectUri: " + req.redirectUri)
+
+        return req;
     }
 
     override fun saveAuthorizationRequest(authorizationRequest: OAuth2AuthorizationRequest?, request: HttpServletRequest?, response: HttpServletResponse?) {
