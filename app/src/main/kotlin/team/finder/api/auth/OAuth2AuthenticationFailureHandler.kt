@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse
 
 class OAuth2AuthenticationFailureHandler : SimpleUrlAuthenticationFailureHandler() {
 
-    @Value("{server.uiDomain}")
+    @Value("\${server.uiDomain}")
     val uiDomain: String? = null
 
     override fun onAuthenticationFailure(
