@@ -26,13 +26,15 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
     val uiDomain: String = "https://teamfinder.gmtkgamejam.com"
 
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
+        logger.warn("Domain check: $uiDomain")
+
         if (response?.isCommitted == true) {
-            println("Response has already been committed.");
+            logger.warn("Response has already been committed.");
             return;
         }
 
         if (authentication?.principal == null || authentication.principal !is CustomUserDetails) {
-            println("Something went wrong while authenticating. Please try again");
+            logger.warn("Something went wrong while authenticating. Please try again");
             return;
         }
         val id = (authentication.principal as CustomUserDetails).attributes["id"].toString().toLong()
@@ -42,11 +44,12 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
         claimsBuilder.claim("iat", Instant.now().epochSecond)
         val token = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claimsBuilder.build())
 
+        logger.warn("Pre-sign note")
+
         token.sign(MACSigner("secretttttttttttttttttttttttttttttttt"))
         val serialize = token.serialize()
 
-        logger.warn("Domain check: $uiDomain")
-        logger.warn("URI check: " + UriComponentsBuilder.fromUriString("$uiDomain/login/authorized"))
+        logger.warn("URI check: " + UriComponentsBuilder.fromUriString("$uiDomain/login/authorized").toUriString())
 
         val uri = UriComponentsBuilder.fromUriString(uiDomain + "/login/authorized")
                 .queryParam("token", serialize)

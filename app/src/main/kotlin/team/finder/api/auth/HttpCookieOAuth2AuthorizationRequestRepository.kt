@@ -22,21 +22,10 @@ class HttpCookieOAuth2AuthorizationRequestRepository : AuthorizationRequestRepos
 
     override fun loadAuthorizationRequest(request: HttpServletRequest?): OAuth2AuthorizationRequest {
         val cookies = request?.cookies
-        logger.warn("AUTH_REQ cookie: " + cookies.toString())
-
         val authReqCookie = cookies?.find { it.name == requestCookieName }?.value
-        logger.warn("AUTH_REQ authReq: " + authReqCookie.toString())
-
         val serData = authReqCookie?.let { Base64Utils.decodeFromString(it) }
-        logger.warn("AUTH_REQ serData: " + serData.toString())
-
         val data = SerializationUtils.deserialize(serData)
-        logger.warn("AUTH_REQ data: " + data.toString())
-
-        val req: OAuth2AuthorizationRequest = OAuth2AuthorizationRequest::class.cast(data)
-        logger.warn("AUTH_REQ redirectUri: " + req.redirectUri)
-
-        return req;
+        return OAuth2AuthorizationRequest::class.cast(data);
     }
 
     override fun saveAuthorizationRequest(authorizationRequest: OAuth2AuthorizationRequest?, request: HttpServletRequest?, response: HttpServletResponse?) {
