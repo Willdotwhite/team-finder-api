@@ -1,5 +1,6 @@
 package team.finder.api.teams
 
+import team.finder.api.utils.TimestampUtils
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -14,13 +15,13 @@ class Team(
     // Managed by DB
     val createdAt: String,
     var updatedAt: String,
-    var deletedAt: String,
+    var deletedAt: String?,
 
     @Id val id: Long
 ) {
 
     constructor(_author: String, _description: String, _skillsetMask: Int) :
-            this(_author, _description, _skillsetMask, "", "", "", 0)
+            this(_author, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
 
     constructor() : this("", "", 1)
 
