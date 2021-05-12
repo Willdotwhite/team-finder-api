@@ -3,6 +3,7 @@ package team.finder.api.teams
 import org.springframework.data.domain.Pageable
 import org.springframework.data.util.Streamable
 import org.springframework.stereotype.Service
+import team.finder.api.utils.TimestampUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -40,7 +41,7 @@ class TeamsService(val repository: TeamsRepository) {
         }
 
         val team = maybeTeam.get()
-        team.deletedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        team.deletedAt = TimestampUtils.getCurrentTimeStamp()
 
         return repository.save(team)
     }
