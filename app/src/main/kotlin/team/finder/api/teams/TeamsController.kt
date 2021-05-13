@@ -1,9 +1,13 @@
 package team.finder.api.teams
 
+import com.nimbusds.jwt.SignedJWT
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
@@ -38,15 +42,69 @@ class TeamsController(val service: TeamsService) {
     }
 
     @PostMapping("/teams")
-    fun add(@Valid @RequestBody teamDto: TeamDto) = service.createTeam(Team.fromDto(teamDto))
+    fun add(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String): ResponseEntity<Any> {
+        val userDetails = getUserDetailsFromJWT(authHeader)
 
-    @GetMapping("/teams/{id}")
-    fun view(@PathVariable id: Long) : Optional<Team> = service.getTeamById(id)
+        val authorId: Long = userDetails["authorId"] as Long
+        if (!service.getTeamByAuthorId(authorId).isEmpty) {
+            // Only one active Team per user
+            return ResponseEntity(HttpStatus.CONFLICT)
+        }
+
+        val author: String = userDetails["author"] as String
+
+        teamDto.author = author
+        teamDto.authorId = authorId
+
+        // Check this author doesn't already have a team before creating one
+        service.createTeam(Team.fromDto(teamDto))
+        return ResponseEntity(HttpStatus.CREATED)
+    }
+
+    @GetMapping("/teams/{authorId}")
+    fun view(@PathVariable authorId: Long) : Optional<Team> = service.getTeamByAuthorId(authorId)
 
     // TODO: Only changed fields
-    @PutMapping("/teams/{id}")
-    fun update(@PathVariable id: Long, @Valid @RequestBody teamDto: TeamDto) = service.updateTeam(id, teamDto.author, teamDto.description, teamDto.skillsetMask)
+    @PutMapping("/teams/{authorId}")
+    fun update(@PathVariable authorId: Long, @Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        val userDetails = getUserDetailsFromJWT(authHeader)
 
-    @DeleteMapping("/teams/{id}")
-    fun delete(@PathVariable id: Long) : Team? = service.deleteTeam(id)
+        // You can only update your own team!
+        if (authorId != userDetails["authorId"]) {
+            return ResponseEntity(HttpStatus.FORBIDDEN)
+        }
+
+        // Don't allow a user to change the owner of the team
+        // Instead of faffing with the DTO, we can just overwrite the potentially-changed fields
+        val author: String = userDetails["author"] as String
+        teamDto.author = author
+        teamDto.authorId = authorId
+
+        service.updateTeam(authorId, teamDto.description, teamDto.skillsetMask)
+        return ResponseEntity(HttpStatus.OK)
+    }
+
+    @DeleteMapping("/teams/{authorId}")
+    fun delete(@PathVariable authorId: Long, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        val userDetails = getUserDetailsFromJWT(authHeader)
+
+        // You can only delete your own team!
+        if (authorId != userDetails["authorId"]) {
+            return ResponseEntity(HttpStatus.FORBIDDEN)
+        }
+
+        service.deleteTeam(authorId)
+        return ResponseEntity(HttpStatus.OK)
+    }
+
+    private fun getUserDetailsFromJWT(authHeader: String): Map<String, Any> {
+        val token = authHeader.replace("Bearer ", "")
+        val userClaims = SignedJWT.parse(token).jwtClaimsSet
+
+        return mapOf(
+            "author" to userClaims.claims["sub"] as String,
+            "authorId" to userClaims.claims["id"] as Long,
+        )
+    }
+
 }

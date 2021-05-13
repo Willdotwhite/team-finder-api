@@ -1,11 +1,8 @@
 package team.finder.api.teams
 
 import org.springframework.data.domain.Pageable
-import org.springframework.data.util.Streamable
 import org.springframework.stereotype.Service
 import team.finder.api.utils.TimestampUtils
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
@@ -16,16 +13,15 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeams(pageable: Pageable): List<Team> = repository.getTeams(pageable)
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team> = repository.getTeams(pageable, skillsetMask)
 
-    fun getTeamById(id: Long): Optional<Team> = repository.getTeamById(id)
+    fun getTeamByAuthorId(authorId: Long): Optional<Team> = repository.getTeamByAuthorId(authorId)
 
-    fun updateTeam(id: Long, author: String, description: String, skillsetMask: Int): Team? {
-        val maybeTeam = this.getTeamById(id)
+    fun updateTeam(authorId: Long, description: String, skillsetMask: Int): Team? {
+        val maybeTeam = this.getTeamByAuthorId(authorId)
         if (!maybeTeam.isPresent) {
             return null
         }
 
         val team = maybeTeam.get()
-        team.author = author
         team.description = description
         team.skillsetMask = skillsetMask
 
@@ -35,7 +31,7 @@ class TeamsService(val repository: TeamsRepository) {
     fun deleteTeam(id: Long): Team? {
         // TODO: Enforce user permissions; only author (/admin?) can delete their own team
 
-        val maybeTeam = this.getTeamById(id)
+        val maybeTeam = this.getTeamByAuthorId(id)
         if (!maybeTeam.isPresent) {
             return null
         }
