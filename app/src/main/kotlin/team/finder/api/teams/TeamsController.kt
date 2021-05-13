@@ -61,38 +61,26 @@ class TeamsController(val service: TeamsService) {
         return ResponseEntity(HttpStatus.CREATED)
     }
 
-    @GetMapping("/teams/{authorId}")
-    fun view(@PathVariable authorId: Long) : Optional<Team> = service.getTeamByAuthorId(authorId)
+    @GetMapping("/teams/mine")
+    fun view() : Optional<Team> {
+        val userDetails = AuthUtil.getUserDetails()
+        return service.getTeamByAuthorId(userDetails.discordId)
+    }
 
     // TODO: Only changed fields
-    @PutMapping("/teams/{authorId}")
-    fun update(@PathVariable authorId: Long, @Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+    @PutMapping("/teams/mine")
+    fun update(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails()
 
-        // You can only update your own team!
-        if (authorId != userDetails.discordId) {
-            return ResponseEntity(HttpStatus.FORBIDDEN)
-        }
-
-        // Don't allow a user to change the owner of the team
-        // Instead of faffing with the DTO, we can just overwrite the potentially-changed fields
-        teamDto.author = userDetails.name
-        teamDto.authorId = authorId
-
-        service.updateTeam(authorId, teamDto.description, teamDto.skillsetMask)
+        service.updateTeam(userDetails.discordId, teamDto.description, teamDto.skillsetMask)
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @DeleteMapping("/teams/{authorId}")
-    fun delete(@PathVariable authorId: Long, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+    @DeleteMapping("/teams/mine")
+    fun delete(@RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails();
 
-        // You can only delete your own team!
-        if (authorId != userDetails.discordId) {
-            return ResponseEntity(HttpStatus.FORBIDDEN)
-        }
-
-        service.deleteTeam(authorId)
+        service.deleteTeam(userDetails.discordId)
         return ResponseEntity(HttpStatus.OK)
     }
 }
