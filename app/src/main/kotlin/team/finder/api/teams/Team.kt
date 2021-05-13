@@ -8,8 +8,8 @@ import javax.persistence.Table
 @Entity
 @Table(name = "team")
 class Team(
-    var author: String,
-    var authorId: Long,
+    var author: String?,
+    var authorId: Long?,
     var description: String,
     var skillsetMask: Int,
 
@@ -21,7 +21,7 @@ class Team(
     @Id val id: Long
 ) {
 
-    constructor(_author: String, _authorId: Long, _description: String, _skillsetMask: Int) :
+    constructor(_author: String?, _authorId: Long?, _description: String, _skillsetMask: Int) :
             this(_author, _authorId, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
 
     constructor() : this("", 1, "", 1)
