@@ -3,7 +3,6 @@ package team.finder.api.auth
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -17,8 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 class OAuth2LoginSecurityConfig : WebSecurityConfigurerAdapter() {
 
-    @Autowired
-    val userDetailsService: CustomUserDetailsService? = null
     @Autowired
     val customOAuth2UserService: CustomOAuth2UserService? = null
     @Autowired
@@ -52,10 +49,6 @@ class OAuth2LoginSecurityConfig : WebSecurityConfigurerAdapter() {
         jwtRequestFilter?.addIgnoredPatterns(Pair("/teams", HttpMethod.GET))
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
-    }
-
-    override fun configure(auth: AuthenticationManagerBuilder?) {
-        auth?.userDetailsService(userDetailsService)
     }
 
     fun cookieAuthorizationRequestRepository(): AuthorizationRequestRepository<OAuth2AuthorizationRequest> = HttpCookieOAuth2AuthorizationRequestRepository()

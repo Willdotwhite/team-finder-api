@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.AuthenticationDetailsSource
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.stereotype.Component
@@ -54,6 +58,15 @@ class JwtRequestFilter : OncePerRequestFilter() {
         if (expired < Instant.now()) {
             return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Expired token")
         }
+
+        val idClaim = parsedToken.jwtClaimsSet.getClaim("id")
+        val id = idClaim.toString().toLong()
+        val subClaim = parsedToken.jwtClaimsSet.subject
+
+        val details = CustomUserDetails(id, subClaim, mutableMapOf())
+        val auth = OAuth2AuthenticationToken(details, mutableListOf(), "discord")
+        auth.details = WebAuthenticationDetailsSource().buildDetails(request)
+        SecurityContextHolder.getContext().authentication = auth
 
         filterChain.doFilter(request, response)
     }
