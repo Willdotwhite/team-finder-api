@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.core.user.OAuth2User
 import team.finder.api.users.User
 
-class CustomUserDetails(private val discordId: Long, private val name: String, private val attributes: MutableMap<String, Any>) : OAuth2User, UserDetails {
+class CustomUserDetails(val discordId: Long, private val name: String, private val attributes: MutableMap<String, Any>) : OAuth2User, UserDetails {
     constructor(u: User, attributes: MutableMap<String, Any>) : this(u.discordId, u.name, attributes)
 
     override fun getName(): String = name

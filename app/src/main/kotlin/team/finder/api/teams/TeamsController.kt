@@ -8,7 +8,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
+import team.finder.api.utils.AuthUtil
 import java.util.*
 import javax.validation.Valid
 
@@ -43,17 +45,15 @@ class TeamsController(val service: TeamsService) {
 
     @PostMapping("/teams")
     fun add(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String): ResponseEntity<Any> {
-        val userDetails = getUserDetailsFromJWT(authHeader)
+        val userDetails = AuthUtil.getUserDetails()
 
-        val authorId: Long = userDetails["authorId"] as Long
+        val authorId: Long = userDetails.discordId as Long
         if (!service.getTeamByAuthorId(authorId).isEmpty) {
             // Only one active Team per user
             return ResponseEntity(HttpStatus.CONFLICT)
         }
 
-        val author: String = userDetails["author"] as String
-
-        teamDto.author = author
+        teamDto.author = userDetails.name
         teamDto.authorId = authorId
 
         // Check this author doesn't already have a team before creating one
@@ -67,17 +67,16 @@ class TeamsController(val service: TeamsService) {
     // TODO: Only changed fields
     @PutMapping("/teams/{authorId}")
     fun update(@PathVariable authorId: Long, @Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
-        val userDetails = getUserDetailsFromJWT(authHeader)
+        val userDetails = AuthUtil.getUserDetails()
 
         // You can only update your own team!
-        if (authorId != userDetails["authorId"]) {
+        if (authorId != userDetails.discordId) {
             return ResponseEntity(HttpStatus.FORBIDDEN)
         }
 
         // Don't allow a user to change the owner of the team
         // Instead of faffing with the DTO, we can just overwrite the potentially-changed fields
-        val author: String = userDetails["author"] as String
-        teamDto.author = author
+        teamDto.author = userDetails.name
         teamDto.authorId = authorId
 
         service.updateTeam(authorId, teamDto.description, teamDto.skillsetMask)
@@ -86,25 +85,14 @@ class TeamsController(val service: TeamsService) {
 
     @DeleteMapping("/teams/{authorId}")
     fun delete(@PathVariable authorId: Long, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
-        val userDetails = getUserDetailsFromJWT(authHeader)
+        val userDetails = AuthUtil.getUserDetails();
 
         // You can only delete your own team!
-        if (authorId != userDetails["authorId"]) {
+        if (authorId != userDetails.discordId) {
             return ResponseEntity(HttpStatus.FORBIDDEN)
         }
 
         service.deleteTeam(authorId)
         return ResponseEntity(HttpStatus.OK)
     }
-
-    private fun getUserDetailsFromJWT(authHeader: String): Map<String, Any> {
-        val token = authHeader.replace("Bearer ", "")
-        val userClaims = SignedJWT.parse(token).jwtClaimsSet
-
-        return mapOf(
-            "author" to userClaims.claims["sub"] as String,
-            "authorId" to userClaims.claims["id"] as Long,
-        )
-    }
-
 }
