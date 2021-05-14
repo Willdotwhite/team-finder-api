@@ -6,24 +6,20 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.web.util.UriComponentsBuilder
+import team.finder.api.system.RuntimeConfig
 import team.finder.api.utils.CookieUtils
 import java.time.Instant
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler() {
-
-    private val logger: Logger = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler::class.java)
-
-    @Value("\${jwt.secret}")
-    val secret: String? = null
-
-    @Value("\${server.uiDomain}")
-    val uiDomain: String = "https://teamfinder.gmtkgamejam.com"
+class OAuth2AuthenticationSuccessHandler(
+    @Autowired val config: RuntimeConfig?
+) : SimpleUrlAuthenticationSuccessHandler() {
 
     override fun onAuthenticationSuccess(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
         if (response?.isCommitted == true) {
@@ -48,10 +44,10 @@ class OAuth2AuthenticationSuccessHandler : SimpleUrlAuthenticationSuccessHandler
         claimsBuilder.claim("aud", "https://cdn.discordapp.com/avatars/${id}/${details.attributes.get("avatar")}.png?size=128")
 
         val token = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claimsBuilder.build())
-        token.sign(MACSigner("secretttttttttttttttttttttttttttttttt"))
+        token.sign(MACSigner(config?.JwtSecret))
 
         val serialize = token.serialize()
-        val uri = UriComponentsBuilder.fromUriString(uiDomain + "/login/authorized")
+        val uri = UriComponentsBuilder.fromUriString("${config?.UiDomain}/login/authorized")
                 .queryParam("token", serialize)
                 .build()
                 .toUriString()

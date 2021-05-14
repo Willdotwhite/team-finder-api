@@ -10,11 +10,15 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import team.finder.api.system.RuntimeConfig
 
 
 @EnableWebSecurity
 @Configuration
 class OAuth2LoginSecurityConfig : WebSecurityConfigurerAdapter() {
+
+    @Autowired
+    val config: RuntimeConfig? = null
 
     @Autowired
     val customOAuth2UserService: CustomOAuth2UserService? = null
@@ -40,8 +44,8 @@ class OAuth2LoginSecurityConfig : WebSecurityConfigurerAdapter() {
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService)
                 .and()
-                .successHandler(OAuth2AuthenticationSuccessHandler())
-                .failureHandler(OAuth2AuthenticationFailureHandler())
+                .successHandler(OAuth2AuthenticationSuccessHandler(config))
+                .failureHandler(OAuth2AuthenticationFailureHandler(config))
 
         jwtRequestFilter?.addIgnoredPatterns("/error")
         jwtRequestFilter?.addIgnoredPatterns("/login/*")
