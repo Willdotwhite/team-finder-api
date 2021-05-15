@@ -46,7 +46,7 @@ class TeamsService(val repository: TeamsRepository) {
 
     fun getSort(strSortingOption: String, isNativeQuery: Boolean): Sort {
 
-        val updatedColumnName = if (isNativeQuery) "updated_at" else "updateAt"
+        val updatedColumnName = if (isNativeQuery) "updated_at" else "updatedAt"
         val authorColumnName = if (isNativeQuery) "author_id" else "authorId"
 
         return when (getSortType(strSortingOption)) {
