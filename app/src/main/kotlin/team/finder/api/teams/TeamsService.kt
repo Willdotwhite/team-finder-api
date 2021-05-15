@@ -44,13 +44,17 @@ class TeamsService(val repository: TeamsRepository) {
         return repository.save(team)
     }
 
-    fun getSort(strSortingOption: String): Sort {
+    fun getSort(strSortingOption: String, isNativeQuery: Boolean): Sort {
+
+        val updatedColumnName = if (isNativeQuery) "updated_at" else "updateAt"
+        val authorColumnName = if (isNativeQuery) "author_id" else "authorId"
+
         return when (getSortType(strSortingOption)) {
-            SortingOptions.Asc -> Sort.by("updated_at").ascending()
-            SortingOptions.Desc -> Sort.by("updated_at").descending()
+            SortingOptions.Asc -> Sort.by(updatedColumnName).ascending()
+            SortingOptions.Desc -> Sort.by(updatedColumnName).descending()
             // Obviously not random, apparently Kotlin Comparators require that the results are reproducible
             // I've probably misunderstood, but for users it'll probably look random enough (just consistently so)
-            SortingOptions.Random -> Sort.by("author_id")
+            SortingOptions.Random -> Sort.by(authorColumnName)
         }
     }
 

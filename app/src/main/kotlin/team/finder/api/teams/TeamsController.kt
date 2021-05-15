@@ -37,7 +37,8 @@ class TeamsController(val service: TeamsService) {
 
         val pageIdx = if (page > 0) page else 1
 
-        val sort: Sort = service.getSort(strSortingOption)
+        val willPerformNativeQuery: Boolean = skillsetMask?.equals(null) == false
+        val sort: Sort = service.getSort(strSortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
         val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, pageSize, sort)
