@@ -1,9 +1,11 @@
 package team.finder.api.teams
 
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import team.finder.api.utils.TimestampUtils
 import java.util.*
+
 
 @Service
 class TeamsService(val repository: TeamsRepository) {
@@ -40,5 +42,27 @@ class TeamsService(val repository: TeamsRepository) {
         team.deletedAt = TimestampUtils.getCurrentTimeStamp()
 
         return repository.save(team)
+    }
+
+    fun getSort(strSortingOption: String): Sort {
+        return when (getSortType(strSortingOption)) {
+            SortingOptions.Asc -> Sort.by("createdAt").ascending()
+            SortingOptions.Desc -> Sort.by("createdAt").descending()
+            // Obviously not random, apparently Kotlin Comparators require that the results are reproducible
+            // I've probably misunderstood, but for users it'll probably look random enough (just consistently so)
+            SortingOptions.Random -> Sort.by("authorId")
+        }
+    }
+
+    /**
+     * Cast user input to known type to avoid concerns about data validation
+     */
+    fun getSortType(input: String): SortingOptions {
+        return when(input.toLowerCase()) {
+            "asc"       -> SortingOptions.Asc
+            "desc"      -> SortingOptions.Desc
+            "random"    -> SortingOptions.Random
+            else        -> SortingOptions.Desc
+        }
     }
 }

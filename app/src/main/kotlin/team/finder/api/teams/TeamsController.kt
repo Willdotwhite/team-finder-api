@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -18,17 +19,28 @@ import javax.validation.Valid
 @CrossOrigin
 class TeamsController(val service: TeamsService) {
 
+    /**
+     * How many records should be returned per page?
+     */
+    val pageSize: Int = 25
+
     val queryCounter: Counter = Metrics.counter("teams.counter")
     val queryTimer: Timer = Metrics.timer("teams.query")
 
     @GetMapping("/teams")
-    fun index(@RequestParam(defaultValue = "1") page: Int, @RequestParam skillsetMask: Int?) : List<Team> {
+    fun index(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam skillsetMask: Int?,
+        @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
+    ) : List<Team> {
         queryCounter.increment()
 
         val pageIdx = if (page > 0) page else 1
 
+        val sort: Sort = service.getSort(strSortingOption)
+
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
-        val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, 50)
+        val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, pageSize, sort)
 
         var teams: List<Team> = listOf()
 
