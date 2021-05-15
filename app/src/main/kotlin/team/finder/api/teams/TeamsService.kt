@@ -46,11 +46,11 @@ class TeamsService(val repository: TeamsRepository) {
 
     fun getSort(strSortingOption: String): Sort {
         return when (getSortType(strSortingOption)) {
-            SortingOptions.Asc -> Sort.by("createdAt").ascending()
-            SortingOptions.Desc -> Sort.by("createdAt").descending()
+            SortingOptions.Asc -> Sort.by("updated_at").ascending()
+            SortingOptions.Desc -> Sort.by("updated_at").descending()
             // Obviously not random, apparently Kotlin Comparators require that the results are reproducible
             // I've probably misunderstood, but for users it'll probably look random enough (just consistently so)
-            SortingOptions.Random -> Sort.by("authorId")
+            SortingOptions.Random -> Sort.by("author_id")
         }
     }
 
