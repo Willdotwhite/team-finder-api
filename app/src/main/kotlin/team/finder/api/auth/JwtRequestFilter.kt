@@ -35,22 +35,22 @@ class JwtRequestFilter : OncePerRequestFilter() {
                 ?: return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "No authorization token send")
 
         if (!tokenHeader.startsWith("Bearer "))
-            return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "Authorization token doesn't start with Bearer")
+            return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Authorization token doesn't start with Bearer")
 
         val token = tokenHeader.substring(7);
         val parsedToken: SignedJWT
         try {
             parsedToken = SignedJWT.parse(token)
         } catch (e: ParseException) {
-            return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "Malformed token")
+            return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
         }
 
         val iatClaim = parsedToken.jwtClaimsSet.getClaim("iat")
-                ?: return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "Malformed token")
+                ?: return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
 
 
         if (iatClaim !is Date) {
-            return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "Malformed token")
+            return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
         }
 
         val iat = iatClaim.toInstant();
