@@ -1,12 +1,11 @@
 package team.finder.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.nimbusds.jose.JWSVerifier
 import com.nimbusds.jwt.SignedJWT
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.authentication.AuthenticationDetailsSource
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
@@ -24,11 +23,8 @@ import javax.servlet.http.HttpServletResponse
 import kotlin.collections.ArrayList
 
 @Component
-class JwtRequestFilter : OncePerRequestFilter() {
+class JwtRequestFilter(val mapper: ObjectMapper, val verifier: JWSVerifier) : OncePerRequestFilter() {
     val matchers: MutableList<RequestMatcher> = ArrayList()
-
-    @Autowired
-    val mapper: ObjectMapper? = null
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         val tokenHeader = request.getHeader("Authorization")
@@ -43,6 +39,10 @@ class JwtRequestFilter : OncePerRequestFilter() {
             parsedToken = SignedJWT.parse(token)
         } catch (e: ParseException) {
             return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
+        }
+
+        if (!parsedToken.verify(verifier)) {
+            return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Bad signature")
         }
 
         val iatClaim = parsedToken.jwtClaimsSet.getClaim("iat")
