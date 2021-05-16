@@ -30,6 +30,9 @@ class JwtRequestFilter : OncePerRequestFilter() {
     @Autowired
     val mapper: ObjectMapper? = null
 
+    @Autowired
+    val verifier: JwtVerifier? = null
+
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         val tokenHeader = request.getHeader("Authorization")
                 ?: return sendErrorMessage(response, HttpStatus.BAD_REQUEST, "No authorization token send")
@@ -42,6 +45,10 @@ class JwtRequestFilter : OncePerRequestFilter() {
         try {
             parsedToken = SignedJWT.parse(token)
         } catch (e: ParseException) {
+            return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
+        }
+
+        if (!(verifier!!.verify(parsedToken))) {
             return sendErrorMessage(response, HttpStatus.UNAUTHORIZED, "Malformed token")
         }
 
