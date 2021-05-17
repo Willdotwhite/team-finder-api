@@ -15,7 +15,7 @@ interface TeamsRepository : PagingAndSortingRepository<Team, Long> {
     fun getTeams(pageable: Pageable): List<Team>
 
     // JPA doesn't handle bitwise OR very well, so a native query is the easiest way to save the hassle
-    @Query("SELECT * FROM team t WHERE (t.skillset_mask & :skillsetMask = :skillsetMask) AND t.deleted_at IS NULL", nativeQuery = true)
+    @Query("SELECT * FROM team t WHERE (t.skillset_mask & :skillsetMask > 0) AND t.deleted_at IS NULL", nativeQuery = true)
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team>
 
     @Query("SELECT t FROM Team t WHERE t.authorId = :id AND t.deletedAt IS NULL")

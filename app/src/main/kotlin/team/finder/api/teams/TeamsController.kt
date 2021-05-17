@@ -30,14 +30,15 @@ class TeamsController(val service: TeamsService) {
     @GetMapping("/teams")
     fun index(
         @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam skillsetMask: Int?,
+        @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
     ) : List<Team> {
         queryCounter.increment()
 
         val pageIdx = if (page > 0) page else 1
 
-        val willPerformNativeQuery: Boolean = skillsetMask?.equals(null) == false
+        // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
+        val willPerformNativeQuery: Boolean = skillsetMask > 0
         val sort: Sort = service.getSort(strSortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
@@ -46,7 +47,7 @@ class TeamsController(val service: TeamsService) {
         var teams: List<Team> = listOf()
 
         queryTimer.record {
-            teams = if (skillsetMask?.equals(null) == false) {
+            teams = if (willPerformNativeQuery) {
                 service.getTeams(queryPageable, skillsetMask)
             } else {
                 service.getTeams(queryPageable)
