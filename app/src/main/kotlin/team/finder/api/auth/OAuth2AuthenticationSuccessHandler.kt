@@ -33,7 +33,7 @@ class OAuth2AuthenticationSuccessHandler(
         }
 
         val details: CustomUserDetails = authentication.principal as CustomUserDetails
-        val id = details.attributes["id"].toString().toLong()
+        val id = details.attributes["id"].toString()
 
         val claimsBuilder = JWTClaimsSet.Builder()
         claimsBuilder.claim("id", id)

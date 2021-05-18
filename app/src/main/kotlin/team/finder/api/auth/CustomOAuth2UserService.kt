@@ -32,7 +32,7 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
         }
     }
 
-    private fun findUser(id: Long): User? {
+    private fun findUser(id: String): User? {
         val maybeUser = userRepository!!.findById(id)
         if (maybeUser.isPresent) {
             return maybeUser.get()
@@ -40,11 +40,11 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
         return null
     }
 
-    private fun findId(attributes: Map<String, Any>): Long? {
+    private fun findId(attributes: Map<String, Any>): String? {
         for (attribute in attributes) {
             if (attribute.key == "id") {
                 if (attribute.value is String) {
-                    return (attribute.value as String).toLong()
+                    return attribute.value as String
                 }
             }
         }

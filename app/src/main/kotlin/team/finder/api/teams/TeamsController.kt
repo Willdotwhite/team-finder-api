@@ -61,7 +61,7 @@ class TeamsController(val service: TeamsService) {
     fun add(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String): ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails()
 
-        val authorId: Long = userDetails.discordId as Long
+        val authorId: String = userDetails.discordId
         if (!service.getTeamByAuthorId(authorId).isEmpty) {
             // Only one active Team per user
             return ResponseEntity(HttpStatus.CONFLICT)

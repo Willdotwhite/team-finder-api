@@ -4,7 +4,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 
 @Entity
-class User(var name: String, @Id val discordId: Long) : org.springframework.security.core.userdetails.User(name, "", emptyList())  {
-    constructor() : this("dummy", 123)
+class User(var name: String, @Id val discordId: String) : org.springframework.security.core.userdetails.User(name, "", emptyList())  {
+    constructor() : this("dummy", "123")
 }
 

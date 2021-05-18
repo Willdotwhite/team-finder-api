@@ -19,5 +19,5 @@ interface TeamsRepository : PagingAndSortingRepository<Team, Long> {
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team>
 
     @Query("SELECT t FROM Team t WHERE t.authorId = :id AND t.deletedAt IS NULL")
-    fun getTeamByAuthorId(id: Long): Optional<Team>
+    fun getTeamByAuthorId(id: String): Optional<Team>
 }
