@@ -15,9 +15,9 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeams(pageable: Pageable): List<Team> = repository.getTeams(pageable)
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team> = repository.getTeams(pageable, skillsetMask)
 
-    fun getTeamByAuthorId(authorId: Long): Optional<Team> = repository.getTeamByAuthorId(authorId)
+    fun getTeamByAuthorId(authorId: String): Optional<Team> = repository.getTeamByAuthorId(authorId)
 
-    fun updateTeam(authorId: Long, description: String, skillsetMask: Int): Team? {
+    fun updateTeam(authorId: String, description: String, skillsetMask: Int): Team? {
         val maybeTeam = this.getTeamByAuthorId(authorId)
         if (!maybeTeam.isPresent) {
             return null
@@ -30,7 +30,7 @@ class TeamsService(val repository: TeamsRepository) {
         return repository.save(team)
     }
 
-    fun deleteTeam(id: Long): Team? {
+    fun deleteTeam(id: String): Team? {
         // TODO: Enforce user permissions; only author (/admin?) can delete their own team
 
         val maybeTeam = this.getTeamByAuthorId(id)

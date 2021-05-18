@@ -21,10 +21,10 @@ class Team(
     @Id val id: Long
 ) {
 
-    constructor(_author: String?, _authorId: Long?, _description: String, _skillsetMask: Int) :
-            this(_author, _authorId.toString(), _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
+    constructor(_author: String?, _authorId: String?, _description: String, _skillsetMask: Int) :
+            this(_author, _authorId, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
 
-    constructor() : this("", 1, "", 1)
+    constructor() : this("", "1", "", 1)
 
     companion object {
         fun fromDto(teamDto: TeamDto) = Team(teamDto.author, teamDto.authorId, teamDto.description, teamDto.skillsetMask)

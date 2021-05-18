@@ -60,7 +60,7 @@ class JwtRequestFilter(val mapper: ObjectMapper, val verifier: JWSVerifier) : On
         }
 
         val idClaim = parsedToken.jwtClaimsSet.getClaim("id")
-        val id = idClaim.toString().toLong()
+        val id = idClaim.toString()
         val subClaim = parsedToken.jwtClaimsSet.subject
 
         val details = CustomUserDetails(id, subClaim, mutableMapOf())
