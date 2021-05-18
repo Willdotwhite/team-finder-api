@@ -27,6 +27,9 @@ class TeamsService(val repository: TeamsRepository) {
         team.description = description
         team.skillsetMask = skillsetMask
 
+        // This doesn't always get updated in the DB, not sure why
+        team.updatedAt = TimestampUtils.getCurrentTimeStamp()
+
         return repository.save(team)
     }
 
