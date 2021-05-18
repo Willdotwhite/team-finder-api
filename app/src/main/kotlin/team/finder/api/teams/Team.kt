@@ -9,7 +9,7 @@ import javax.persistence.Table
 @Table(name = "team")
 class Team(
     var author: String?,
-    var authorId: Long?,
+    var authorId: String?,
     var description: String,
     var skillsetMask: Int,
 
@@ -22,7 +22,7 @@ class Team(
 ) {
 
     constructor(_author: String?, _authorId: Long?, _description: String, _skillsetMask: Int) :
-            this(_author, _authorId, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
+            this(_author, _authorId.toString(), _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
 
     constructor() : this("", 1, "", 1)
 
