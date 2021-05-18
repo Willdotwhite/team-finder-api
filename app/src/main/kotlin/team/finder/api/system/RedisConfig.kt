@@ -9,7 +9,7 @@ import java.time.Duration
 @Bean
 fun cacheConfiguration(): RedisCacheConfiguration {
     return RedisCacheConfiguration.defaultCacheConfig()
-        .entryTtl(Duration.ofMinutes(15))
+        .entryTtl(Duration.ofMinutes(3))
         .disableCachingNullValues()
         .serializeValuesWith(SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer()))
 }
