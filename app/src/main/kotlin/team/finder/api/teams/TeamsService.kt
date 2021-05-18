@@ -27,12 +27,12 @@ class TeamsService(val repository: TeamsRepository) {
     fun createTeam(team: Team) = repository.save(team)
 
     @Cacheable("teams")
-    fun getTeams(pageIdx: Int, skillsetMask: Int, strSortingOption: String): List<Team> {
+    fun getTeams(pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
         queryCounter.increment()
 
         // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
         val willPerformNativeQuery: Boolean = skillsetMask > 0
-        val sort: Sort = getSort(strSortingOption, willPerformNativeQuery)
+        val sort: Sort = getSort(sortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
         val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, pageSize, sort)
@@ -80,12 +80,12 @@ class TeamsService(val repository: TeamsRepository) {
         return repository.save(team)
     }
 
-    fun getSort(strSortingOption: String, isNativeQuery: Boolean): Sort {
+    fun getSort(sortingOption: SortingOptions, isNativeQuery: Boolean): Sort {
 
         val updatedColumnName = if (isNativeQuery) "updated_at" else "updatedAt"
         val authorColumnName = if (isNativeQuery) "author_id" else "authorId"
 
-        return when (getSortType(strSortingOption)) {
+        return when (sortingOption) {
             SortingOptions.Asc -> Sort.by(updatedColumnName).ascending()
             SortingOptions.Desc -> Sort.by(updatedColumnName).descending()
             // Obviously not random, apparently Kotlin Comparators require that the results are reproducible

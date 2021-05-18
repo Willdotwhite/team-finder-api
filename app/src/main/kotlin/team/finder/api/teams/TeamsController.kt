@@ -26,7 +26,9 @@ class TeamsController(val service: TeamsService) {
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
     ) : List<Team> {
         val pageIdx = if (page > 0) page else 1
-        return service.getTeams(pageIdx, skillsetMask, strSortingOption)
+        val boundedSkillsetMask = if (skillsetMask in 1..127) skillsetMask else 0
+        val sortType = service.getSortType(strSortingOption)
+        return service.getTeams(pageIdx, boundedSkillsetMask, sortType)
     }
 
     @PostMapping("/teams")
