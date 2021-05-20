@@ -1,6 +1,5 @@
 package team.finder.api.teams
 
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -17,17 +16,13 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeams(pageable: Pageable): List<Team> = repository.getTeams(pageable)
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team> = repository.getTeams(pageable, skillsetMask)
 
-    fun getTeamByAuthorId(authorId: String): Optional<Team> = repository.getTeamByAuthorId(authorId)
+    fun getTeamByAuthorId(authorId: String): Team? = repository.getTeamByAuthorId(authorId)
     fun getTeamById(teamId: Long): Team? = repository.getTeamById(teamId)
     fun getTeamsWithActiveReports(): List<Team> = repository.getTeamsWithReports()
 
     fun updateTeam(authorId: String, description: String, skillsetMask: Int): Team? {
-        val maybeTeam = this.getTeamByAuthorId(authorId)
-        if (!maybeTeam.isPresent) {
-            return null
-        }
+        val team = this.getTeamByAuthorId(authorId) ?: return null
 
-        val team = maybeTeam.get()
         team.description = description
         team.skillsetMask = skillsetMask
 
@@ -37,15 +32,9 @@ class TeamsService(val repository: TeamsRepository) {
         return repository.save(team)
     }
 
-    fun deleteTeam(id: String): Team? {
+    fun deleteTeam(authorId: String): Team? {
         // TODO: Enforce user permissions; only author (/admin?) can delete their own team
-
-        val maybeTeam = this.getTeamByAuthorId(id)
-        if (!maybeTeam.isPresent) {
-            return null
-        }
-
-        val team = maybeTeam.get()
+        val team = this.getTeamByAuthorId(authorId) ?: return null
         team.deletedAt = TimestampUtils.getCurrentTimeStamp()
 
         return repository.save(team)

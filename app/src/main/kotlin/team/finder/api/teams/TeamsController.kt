@@ -9,13 +9,17 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
 import java.util.*
 import javax.validation.Valid
 
 @RestController
 @CrossOrigin
-class TeamsController(val service: TeamsService) {
+class TeamsController(
+    val usersService: UsersService,
+    val service: TeamsService
+) {
 
     /**
      * How many records should be returned per page?
@@ -58,10 +62,12 @@ class TeamsController(val service: TeamsService) {
 
     @PostMapping("/teams")
     fun add(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String): ResponseEntity<Any> {
+        if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
+
         val userDetails = AuthUtil.getUserDetails()
 
         val authorId: String = userDetails.discordId
-        if (!service.getTeamByAuthorId(authorId).isEmpty) {
+        if (service.getTeamByAuthorId(authorId) != null) {
             // Only one active Team per user
             return ResponseEntity(HttpStatus.CONFLICT)
         }
@@ -75,7 +81,9 @@ class TeamsController(val service: TeamsService) {
     }
 
     @GetMapping("/teams/mine")
-    fun view() : Optional<Team> {
+    fun view() : Team? {
+        if (userIsBanned()) return null
+
         val userDetails = AuthUtil.getUserDetails()
         return service.getTeamByAuthorId(userDetails.discordId)
     }
@@ -83,6 +91,8 @@ class TeamsController(val service: TeamsService) {
     // TODO: Only changed fields
     @PutMapping("/teams/mine")
     fun update(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
+
         val userDetails = AuthUtil.getUserDetails()
 
         service.updateTeam(userDetails.discordId, teamDto.description, teamDto.skillsetMask)
@@ -91,6 +101,8 @@ class TeamsController(val service: TeamsService) {
 
     @DeleteMapping("/teams/mine")
     fun delete(@RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
+
         val userDetails = AuthUtil.getUserDetails()
 
         service.deleteTeam(userDetails.discordId)
@@ -99,6 +111,8 @@ class TeamsController(val service: TeamsService) {
 
     @PostMapping("/teams/report")
     fun report(@RequestParam("teamId") teamId: Long, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
+
         val team = service.getTeamById(teamId) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
         // TODO: Audit message about this action
@@ -106,5 +120,11 @@ class TeamsController(val service: TeamsService) {
         service.saveTeam(team)
 
         return ResponseEntity(HttpStatus.OK)
+    }
+
+    fun userIsBanned() : Boolean {
+        val userDetails = AuthUtil.getUserDetails()
+        val user = usersService.getUser(userDetails.discordId)
+        return user != null && user.isBanned
     }
 }

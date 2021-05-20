@@ -1,7 +1,6 @@
 package team.finder.api.users
 
 import org.springframework.stereotype.Service
-import team.finder.api.users.UsersRepository
 
 
 @Service
