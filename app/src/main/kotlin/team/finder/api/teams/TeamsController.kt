@@ -25,6 +25,7 @@ class TeamsController(val service: TeamsService) {
     val queryCounter: Counter = Metrics.counter("teams.counter")
     val queryTimer: Timer = Metrics.timer("teams.query")
 
+    // TODO: Suppress reportCount from being returned from API
     @GetMapping("/teams")
     fun index(
         @RequestParam(defaultValue = "1") page: Int,
@@ -90,9 +91,20 @@ class TeamsController(val service: TeamsService) {
 
     @DeleteMapping("/teams/mine")
     fun delete(@RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
-        val userDetails = AuthUtil.getUserDetails();
+        val userDetails = AuthUtil.getUserDetails()
 
         service.deleteTeam(userDetails.discordId)
+        return ResponseEntity(HttpStatus.OK)
+    }
+
+    @PostMapping("/teams/report")
+    fun report(@RequestParam("teamId") teamId: Long, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
+        val team = service.getTeamById(teamId) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        // TODO: Audit message about this action
+        team.reportCount = team.reportCount + 1
+        service.saveTeam(team)
+
         return ResponseEntity(HttpStatus.OK)
     }
 }

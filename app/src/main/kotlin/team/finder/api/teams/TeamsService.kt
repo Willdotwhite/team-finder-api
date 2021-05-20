@@ -1,5 +1,6 @@
 package team.finder.api.teams
 
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -11,11 +12,14 @@ import java.util.*
 class TeamsService(val repository: TeamsRepository) {
 
     fun createTeam(team: Team) = repository.save(team)
+    fun saveTeam(team: Team) = repository.save(team) // Yeah, I know...
 
     fun getTeams(pageable: Pageable): List<Team> = repository.getTeams(pageable)
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team> = repository.getTeams(pageable, skillsetMask)
 
     fun getTeamByAuthorId(authorId: String): Optional<Team> = repository.getTeamByAuthorId(authorId)
+    fun getTeamById(teamId: Long): Team? = repository.getTeamById(teamId)
+    fun getTeamsWithActiveReports(): List<Team> = repository.getTeamsWithReports()
 
     fun updateTeam(authorId: String, description: String, skillsetMask: Int): Team? {
         val maybeTeam = this.getTeamByAuthorId(authorId)

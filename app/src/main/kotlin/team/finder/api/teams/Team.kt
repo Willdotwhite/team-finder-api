@@ -18,11 +18,13 @@ class Team(
     var updatedAt: String,
     var deletedAt: String?,
 
+    var reportCount: Int,
+
     @Id val id: Long
 ) {
 
     constructor(_author: String?, _authorId: String?, _description: String, _skillsetMask: Int) :
-            this(_author, _authorId, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0)
+            this(_author, _authorId, _description, _skillsetMask, TimestampUtils.getCurrentTimeStamp(), TimestampUtils.getCurrentTimeStamp(), null, 0, 0)
 
     constructor() : this("", "1", "", 1)
 

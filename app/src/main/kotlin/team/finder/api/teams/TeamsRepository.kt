@@ -20,4 +20,11 @@ interface TeamsRepository : PagingAndSortingRepository<Team, Long> {
 
     @Query("SELECT t FROM Team t WHERE t.authorId = :id AND t.deletedAt IS NULL")
     fun getTeamByAuthorId(id: String): Optional<Team>
+
+    @Query("SELECT t FROM Team t WHERE t.id = :teamId AND t.deletedAt IS NULL")
+    fun getTeamById(teamId: Long): Team?
+
+    @Query("SELECT t FROM Team t WHERE t.reportCount > 0 AND t.deletedAt IS NULL ORDER BY t.reportCount DESC")
+    fun getTeamsWithReports(): List<Team>
+
 }
