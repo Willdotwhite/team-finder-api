@@ -8,7 +8,7 @@ class User(
     var name: String,
     @Id val discordId: String,
     val isAdmin: Boolean,
-    val isBanned: Boolean,
+    var isBanned: Boolean,
 ) : org.springframework.security.core.userdetails.User(name, "", emptyList())  {
     constructor() : this("dummy", "123", false, false)
 }

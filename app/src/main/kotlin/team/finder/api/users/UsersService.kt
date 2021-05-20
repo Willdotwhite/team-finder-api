@@ -7,5 +7,6 @@ import org.springframework.stereotype.Service
 class UsersService(val repository: UsersRepository) {
 
     fun getUser(discordId: String) = repository.getUser(discordId)
+    fun saveUser(user: User) = repository.save(user)
 
 }
