@@ -1,6 +1,5 @@
 package team.finder.api.teams
 
-import com.nimbusds.jwt.SignedJWT
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
@@ -9,7 +8,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import team.finder.api.utils.AuthUtil
 import java.util.*

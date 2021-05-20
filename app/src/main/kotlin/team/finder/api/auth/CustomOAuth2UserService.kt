@@ -20,16 +20,22 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
         val oAuth2User = super.loadUser(userRequest)
 
         val id = findId(oAuth2User.attributes) ?: throw OAuth2AuthenticationException(OAuth2Error("No discord id available"))
-        val user = findUser(id)
-        return if (user == null) {
-            val u = User(oAuth2User.name, id)
-            userRepository!!.save(u)
-            CustomUserDetails(u, oAuth2User.attributes)
-        } else {
-            user.name = oAuth2User.name
-            userRepository!!.save(user)
-            CustomUserDetails(user, oAuth2User.attributes)
+
+        var user = findUser(id)
+        if (user == null) {
+            user = User(oAuth2User.name, id, isAdmin = false, isBanned = false)
         }
+
+        // Map name to consistent value (e.g. if user names change after first login)
+        user.name = oAuth2User.name
+
+        val attributes = oAuth2User.attributes
+        attributes["isAdmin"] = user.isAdmin
+        attributes["isBanned"] = user.isBanned
+
+        userRepository!!.save(user)
+
+        return CustomUserDetails(user, oAuth2User.attributes)
     }
 
     private fun findUser(id: String): User? {
