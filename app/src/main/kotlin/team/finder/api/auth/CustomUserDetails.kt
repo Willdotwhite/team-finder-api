@@ -18,9 +18,7 @@ class CustomUserDetails(
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = ArrayList()
 
-    override fun isEnabled(): Boolean = attributes["isBanned"] == false
-
-    fun isAdmin() : Boolean = attributes["isAdmin"] == true
+    override fun isEnabled(): Boolean = true
 
 
     /* Unused, inherited from UserDetails */

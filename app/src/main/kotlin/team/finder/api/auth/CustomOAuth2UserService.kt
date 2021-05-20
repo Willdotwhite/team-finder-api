@@ -28,11 +28,6 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
 
         // Map name to consistent value (e.g. if user names change after first login)
         user.name = oAuth2User.name
-
-        val attributes = oAuth2User.attributes
-        attributes["isAdmin"] = user.isAdmin
-        attributes["isBanned"] = user.isBanned
-
         userRepository!!.save(user)
 
         return CustomUserDetails(user, oAuth2User.attributes)
