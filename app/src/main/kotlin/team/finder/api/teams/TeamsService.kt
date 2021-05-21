@@ -4,7 +4,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import team.finder.api.utils.TimestampUtils
-import java.util.*
 
 
 @Service
@@ -17,7 +16,7 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team> = repository.getTeams(pageable, skillsetMask)
 
     fun getTeamByAuthorId(authorId: String): Team? = repository.getTeamByAuthorId(authorId)
-    fun getTeamById(teamId: Long): Team? = repository.getTeamById(teamId)
+    fun getTeamById(teamId: Long): Team? = repository.findByIdAndDeletedAtIsNull(teamId)
     fun getTeamsWithActiveReports(): List<Team> = repository.getTeamsWithReports()
 
     fun updateTeam(authorId: String, description: String, skillsetMask: Int): Team? {
