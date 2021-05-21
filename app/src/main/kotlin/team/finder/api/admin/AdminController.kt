@@ -3,7 +3,6 @@ package team.finder.api.admin
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import team.finder.api.teams.Team
 import team.finder.api.teams.TeamsService
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
@@ -17,16 +16,14 @@ class AdminController(
 ) {
 
     @GetMapping("/admin/reports")
-    fun reports(): List<Team> {
+    fun reports(): ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails()
-
         val user = usersService.getUser(userDetails.discordId)
         if (user == null || !user.isAdmin) {
-            // TODO: Respond with error code, don't let users know anything is here
-            return listOf()
+            return ResponseEntity(HttpStatus.NOT_FOUND)
         }
 
-        return teamsService.getTeamsWithActiveReports()
+        return ResponseEntity(teamsService.getTeamsWithActiveReports(), HttpStatus.OK)
     }
 
     @DeleteMapping("/admin/delete-team")
@@ -34,7 +31,6 @@ class AdminController(
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
         if (user == null || !user.isAdmin) {
-            // TODO: Respond with error code, don't let users know anything is here
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
 
@@ -42,16 +38,14 @@ class AdminController(
         teamToDelete.deletedAt = TimestampUtils.getCurrentTimeStamp()
         teamsService.saveTeam(teamToDelete)
 
-        return ResponseEntity(HttpStatus.OK)
+        return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
 
     @PostMapping("/admin/ban-user")
     fun banUser(@RequestParam("userId") discordIdOfUserToBan: String): ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails()
-
         val user = usersService.getUser(userDetails.discordId)
         if (user == null || !user.isAdmin) {
-            // TODO: Respond with error code, don't let users know anything is here
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
 
@@ -69,7 +63,7 @@ class AdminController(
         // Delete current team as well
         deleteTeam(userToBan.discordId)
 
-        return ResponseEntity(HttpStatus.OK)
+        return ResponseEntity(userToBan, HttpStatus.OK)
     }
 
 }

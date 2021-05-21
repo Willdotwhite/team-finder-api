@@ -35,7 +35,7 @@ class TeamsController(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
-    ) : List<Team> {
+    ) : ResponseEntity<Any> {
         queryCounter.increment()
 
         val pageIdx = if (page > 0) page else 1
@@ -57,7 +57,7 @@ class TeamsController(
             }
         }
 
-        return teams;
+        return ResponseEntity(teams, HttpStatus.OK)
     }
 
     @PostMapping("/teams")
@@ -76,16 +76,16 @@ class TeamsController(
         teamDto.authorId = authorId
 
         // Check this author doesn't already have a team before creating one
-        service.createTeam(Team.fromDto(teamDto))
-        return ResponseEntity(HttpStatus.CREATED)
+        val team = service.createTeam(Team.fromDto(teamDto))
+        return ResponseEntity(team, HttpStatus.CREATED)
     }
 
     @GetMapping("/teams/mine")
-    fun view() : Team? {
-        if (userIsBanned()) return null
+    fun view() : ResponseEntity<Any> {
+        if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
 
         val userDetails = AuthUtil.getUserDetails()
-        return service.getTeamByAuthorId(userDetails.discordId)
+        return ResponseEntity(service.getTeamByAuthorId(userDetails.discordId), HttpStatus.OK)
     }
 
     // TODO: Only changed fields
