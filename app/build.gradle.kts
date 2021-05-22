@@ -8,13 +8,15 @@
 
 plugins {
     id("org.springframework.boot") version "2.4.5"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm") version "1.4.32"
-    kotlin("plugin.spring") version "1.4.32"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    kotlin("plugin.spring") version "1.4.32"
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    kotlin("jvm") version "1.4.32"
+    kotlin("plugin.serialization") version "1.5.0"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+
 }
 
 repositories {
@@ -36,9 +38,11 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework:spring-webmvc")
@@ -48,6 +52,8 @@ dependencies {
 
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
