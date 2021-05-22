@@ -27,14 +27,14 @@ class AdminController(
     }
 
     @DeleteMapping("/admin/delete-team")
-    fun deleteTeam(@RequestParam("userId") discordIdOfUserToBan: String) : ResponseEntity<Any> {
+    fun deleteTeam(@RequestParam("teamId") idOfTeamToBan: Long) : ResponseEntity<Any> {
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
         if (user == null || !user.isAdmin) {
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
 
-        val teamToDelete = teamsService.getTeamByAuthorId(discordIdOfUserToBan) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        val teamToDelete = teamsService.getTeamById(idOfTeamToBan) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         teamToDelete.deletedAt = TimestampUtils.getCurrentTimeStamp()
         teamsService.saveTeam(teamToDelete)
 
@@ -61,7 +61,10 @@ class AdminController(
         usersService.saveUser(userToBan)
 
         // Delete current team as well
-        deleteTeam(userToBan.discordId)
+        val teamCreatedByUser = teamsService.getTeamByAuthorId(userToBan.discordId)
+        if (teamCreatedByUser != null) {
+            deleteTeam(teamCreatedByUser.id)
+        }
 
         return ResponseEntity(userToBan, HttpStatus.OK)
     }
