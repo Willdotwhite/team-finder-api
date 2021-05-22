@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
+import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -52,7 +53,9 @@ class TeamsController(
         if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
 
         val userDetails = AuthUtil.getUserDetails()
-        return ResponseEntity(service.getTeamByAuthorId(userDetails.discordId), HttpStatus.OK)
+
+        val jsonSerializableTeam = Optional.ofNullable(service.getTeamByAuthorId(userDetails.discordId))
+        return ResponseEntity(jsonSerializableTeam, HttpStatus.OK)
     }
 
     // TODO: Only changed fields
