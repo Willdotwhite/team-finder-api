@@ -19,42 +19,16 @@ import javax.validation.Valid
 @CrossOrigin
 class TeamsController(val service: TeamsService) {
 
-    /**
-     * How many records should be returned per page?
-     */
-    val pageSize: Int = 25
-
-    val queryCounter: Counter = Metrics.counter("teams.counter")
-    val queryTimer: Timer = Metrics.timer("teams.query")
-
     @GetMapping("/teams")
     fun index(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
     ) : List<Team> {
-        queryCounter.increment()
-
         val pageIdx = if (page > 0) page else 1
-
-        // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
-        val willPerformNativeQuery: Boolean = skillsetMask > 0
-        val sort: Sort = service.getSort(strSortingOption, willPerformNativeQuery)
-
-        // Pagination needs to be offset by -1 from expectations, but can't be set below 0
-        val queryPageable: PageRequest = PageRequest.of(pageIdx - 1, pageSize, sort)
-
-        var teams: List<Team> = listOf()
-
-        queryTimer.record {
-            teams = if (willPerformNativeQuery) {
-                service.getTeams(queryPageable, skillsetMask)
-            } else {
-                service.getTeams(queryPageable)
-            }
-        }
-
-        return teams;
+        val boundedSkillsetMask = if (skillsetMask in 1..127) skillsetMask else 0
+        val sortType = service.getSortType(strSortingOption)
+        return service.getTeams(pageIdx, boundedSkillsetMask, sortType)
     }
 
     @PostMapping("/teams")
