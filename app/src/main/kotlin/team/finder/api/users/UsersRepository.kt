@@ -4,4 +4,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UsersRepository : CrudRepository<User, String>
+interface UsersRepository : CrudRepository<User, String> {
+
+    fun findByDiscordId(discordId: String): User?
+}

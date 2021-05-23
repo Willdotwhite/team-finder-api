@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Repository
 @Transactional
@@ -19,5 +18,11 @@ interface TeamsRepository : PagingAndSortingRepository<Team, Long> {
     fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team>
 
     @Query("SELECT t FROM Team t WHERE t.authorId = :id AND t.deletedAt IS NULL")
-    fun getTeamByAuthorId(id: String): Optional<Team>
+    fun getTeamByAuthorId(id: String): Team?
+
+    fun findByIdAndDeletedAtIsNull(teamId: Long): Team?
+
+    @Query("SELECT t FROM Team t WHERE t.reportCount > 0 AND t.deletedAt IS NULL ORDER BY t.reportCount DESC")
+    fun getTeamsWithReports(): List<Team>
+
 }
