@@ -1,8 +1,11 @@
 package team.finder.api.admin
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import team.finder.api.teams.TeamsController
 import team.finder.api.teams.TeamsService
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
@@ -14,6 +17,8 @@ class AdminController(
     val teamsService: TeamsService,
     val usersService: UsersService
 ) {
+
+    private val logger: Logger = LoggerFactory.getLogger(AdminController::class.java)
 
     @GetMapping("/admin/reports")
     fun reports(): ResponseEntity<Any> {
@@ -38,6 +43,8 @@ class AdminController(
         teamToDelete.deletedAt = TimestampUtils.getCurrentTimeStamp()
         teamsService.saveTeam(teamToDelete)
 
+        logger.info("[ADMIN] ${user.name} has deleted Team ${teamToDelete.id}")
+
         return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
 
@@ -59,6 +66,8 @@ class AdminController(
         // TODO: Audit record
         userToBan.isBanned = true
         usersService.saveUser(userToBan)
+
+        logger.info("[ADMIN] ${user.name} has banned User ${userToBan.discordId}")
 
         // Delete current team as well
         val teamCreatedByUser = teamsService.getTeamByAuthorId(userToBan.discordId)

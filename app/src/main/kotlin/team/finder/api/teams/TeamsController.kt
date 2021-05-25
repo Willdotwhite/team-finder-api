@@ -1,9 +1,12 @@
 package team.finder.api.teams
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import team.finder.api.auth.HttpCookieOAuth2AuthorizationRequestRepository
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
 import java.util.*
@@ -15,6 +18,8 @@ class TeamsController(
     val usersService: UsersService,
     val service: TeamsService
 ) {
+
+    private val logger: Logger = LoggerFactory.getLogger(TeamsController::class.java)
 
     @GetMapping("/teams")
     fun index(
@@ -58,7 +63,6 @@ class TeamsController(
         return ResponseEntity(jsonSerializableTeam, HttpStatus.OK)
     }
 
-    // TODO: Only changed fields
     @PutMapping("/teams/mine")
     fun update(@Valid @RequestBody teamDto: TeamDto, @RequestHeader(HttpHeaders.AUTHORIZATION) authHeader: String) : ResponseEntity<Any> {
         if (userIsBanned()) return ResponseEntity(HttpStatus.FORBIDDEN)
@@ -85,7 +89,9 @@ class TeamsController(
 
         val team = service.getTeamById(teamId) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
-        // TODO: Audit message about this action
+        val user = usersService.getUser(AuthUtil.getUserDetails().discordId)!!
+        logger.info("[REPORT] User ${user.discordId} reported Team ${team.id}")
+
         team.reportCount = team.reportCount + 1
         service.saveTeam(team)
 
