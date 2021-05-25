@@ -2,7 +2,7 @@
 <configuration>
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss}] %highlight([%-5level]) %-18logger{24} - %msg%n</pattern>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}] %highlight([%-5level]) %-18logger{24} - %msg %ex{2}%nopex%n</pattern>
         </encoder>
     </appender>
      
