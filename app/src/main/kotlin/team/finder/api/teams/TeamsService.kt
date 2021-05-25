@@ -68,7 +68,6 @@ class TeamsService(val repository: TeamsRepository) {
     }
 
     fun deleteTeam(authorId: String): Team? {
-        // TODO: Enforce user permissions; only author (/admin?) can delete their own team
         val team = this.getTeamByAuthorId(authorId) ?: return null
         team.deletedAt = TimestampUtils.getCurrentTimeStamp()
 
