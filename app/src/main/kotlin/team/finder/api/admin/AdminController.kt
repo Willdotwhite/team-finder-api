@@ -2,14 +2,16 @@ package team.finder.api.admin
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import team.finder.api.teams.TeamsController
 import team.finder.api.teams.TeamsService
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
 import team.finder.api.utils.TimestampUtils
+
 
 @RestController
 @CrossOrigin
@@ -17,6 +19,9 @@ class AdminController(
     val teamsService: TeamsService,
     val usersService: UsersService
 ) {
+
+    @Autowired
+    private val cacheManager: CacheManager? = null
 
     private val logger: Logger = LoggerFactory.getLogger(AdminController::class.java)
 
@@ -45,6 +50,9 @@ class AdminController(
 
         logger.info("[ADMIN] ${user.name} has deleted Team ${teamToDelete.id}")
 
+        // Clear Teams cache to remove any offensive material
+        clearCache()
+
         return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
 
@@ -63,7 +71,6 @@ class AdminController(
             return ResponseEntity(HttpStatus.CONFLICT)
         }
 
-        // TODO: Audit record
         userToBan.isBanned = true
         usersService.saveUser(userToBan)
 
@@ -76,6 +83,17 @@ class AdminController(
         }
 
         return ResponseEntity(userToBan, HttpStatus.OK)
+    }
+
+    fun clearCache() {
+        if (cacheManager == null) {
+            return
+        }
+
+        // Clear all caches
+        for (name in cacheManager.cacheNames) {
+            cacheManager.getCache(name)?.clear()
+        }
     }
 
 }
