@@ -31,9 +31,8 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    // This dependency is used by the application.
     implementation("com.google.guava:guava:30.0-jre")
-
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
