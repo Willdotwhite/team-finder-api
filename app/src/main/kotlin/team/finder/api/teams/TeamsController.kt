@@ -65,7 +65,7 @@ class TeamsController(
 
         val userDetails = AuthUtil.getUserDetails()
 
-        service.updateTeam(userDetails.discordId, teamDto.description, teamDto.skillsetMask)
+        service.updateTeam(userDetails.discordId, teamDto.description, teamDto.skillsetMask, teamDto.languages)
         return ResponseEntity(HttpStatus.OK)
     }
 

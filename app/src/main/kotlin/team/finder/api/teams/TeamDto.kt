@@ -17,5 +17,8 @@ class TeamDto(
 
     @Max(1048575)
     var skillsetMask: Int,
+
+    @NotNull
+    val languages: Collection<Language>,
 ) {
 }

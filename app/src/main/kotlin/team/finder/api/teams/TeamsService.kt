@@ -55,11 +55,12 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeamById(teamId: Long): Team? = repository.findByIdAndDeletedAtIsNull(teamId)
     fun getTeamsWithActiveReports(): List<Team> = repository.getTeamsWithReports()
 
-    fun updateTeam(authorId: String, description: String, skillsetMask: Int): Team? {
+    fun updateTeam(authorId: String, description: String, skillsetMask: Int, languages: Collection<Language>): Team? {
         val team = this.getTeamByAuthorId(authorId) ?: return null
 
         team.description = description
         team.skillsetMask = skillsetMask
+        team.languages = languages.joinToString(",")
 
         // This doesn't always get updated in the DB, not sure why
         team.updatedAt = TimestampUtils.getCurrentTimeStamp()
