@@ -25,7 +25,6 @@ class AdminController(
     private val cacheManager: CacheManager? = null
 
     private val logger: Logger = LoggerFactory.getLogger(AdminController::class.java)
-    private val ADMIN_TAG : String = "ADMIN"
 
     private fun getAuthorisedUser() : User? {
         val userDetails = AuthUtil.getUserDetails()
@@ -56,6 +55,19 @@ class AdminController(
         return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
 
+    @PostMapping("/admin/reinstate-team")
+    fun reinstateTeam(@RequestParam("teamId") idOfTeamToRedeem: Long) : ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        val teamToRedeem = teamsService.getTeamById(idOfTeamToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        teamToRedeem.deletedAt = null
+        teamsService.saveTeam(teamToRedeem)
+
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has reinstated Team ${teamToRedeem.id}")
+
+        return ResponseEntity(teamToRedeem, HttpStatus.OK)
+    }
+
     @PostMapping("/admin/ban-user")
     fun banUser(@RequestParam("userId") discordIdOfUserToBan: String): ResponseEntity<Any> {
         val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
@@ -81,6 +93,27 @@ class AdminController(
         return ResponseEntity(userToBan, HttpStatus.OK)
     }
 
+    @PostMapping("/admin/redeem-user")
+    fun redeemUser(@RequestParam("userId") discordIdOfUserToRedeem: String): ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        val userToRedeem = usersService.getUser(discordIdOfUserToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        userToRedeem.isBanned = false
+        usersService.saveUser(userToRedeem)
+
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has redeemed User ${userToRedeem.discordId}")
+
+        // @todo should we always re-instate the team automatically? Maybe they were banned for a bad team but are being given a second chance (in which case we shouldn't reinstate the team)
+        // Re-instate deleted team as well (if any)
+        //val teamCreatedByUser = teamsService.getTeamByAuthorId(userToRedeem.discordId)
+        //if (teamCreatedByUser != null) {
+        //    reinstateTeam(teamCreatedByUser.id)
+        //}
+
+        return ResponseEntity(userToRedeem, HttpStatus.OK)
+    }
+
     fun clearCache() {
         if (cacheManager == null) {
             return
@@ -93,3 +126,5 @@ class AdminController(
     }
 
 }
+
+private val ADMIN_TAG : String = "ADMIN"

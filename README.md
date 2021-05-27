@@ -98,15 +98,21 @@ There are currently three Team-related endpoints exposed by the API:
 
 #### Admin
 
-There are currently three Admin-related endpoints exposed by the API (note that all of them check whether the user making the request is an admin):
+There are currently five Admin-related endpoints exposed by the API (note that all of them check whether the user making the request is an admin):
   * /admin/reports
     * GET: returns a list of the teams with active reports.
   * /admin/delete-team
     * DELETE: marks a team as deleted. Takes one mandatory parameter:
       * teamId: the ID of the team to delete.
+  * /admin/reinstate-team
+    * POST: reinstates a team (i.e. marks it as no longer deleted). Takes one mandatory parameter:
+      * teamId: the ID of the team to reinstate.
   * admin/ban-user
     * POST: marks a user as banned and their team as deleted (if any). Takes one mandatory parameter:
-      * userId: the discord ID of the user to ban
+      * userId: the discord ID of the user to ban.
+  * admin/redeem-user
+    * POST: redeems a user (i.e. marks them as no longer banned). Takes one mandatory parameter:
+        * userId: the discord ID of the user to redeem.
 
 ### Troubleshooting
 
