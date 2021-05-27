@@ -98,7 +98,8 @@ class TeamsController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    fun userIsBanned() : Boolean {
+    // @todo: should probably go somewhere else (Admin?)
+    private fun userIsBanned() : Boolean {
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
         return user != null && user.isBanned

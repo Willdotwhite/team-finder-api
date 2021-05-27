@@ -75,6 +75,39 @@ This example uses Docker, because setting up MySQL natively is a pain.
 
 You don't need to create the `teams` table in the DB for some reason - Java/SB magic allows the data to persist somehow.
 
+### Endpoints
+
+#### Teams
+
+There are currently three Team-related endpoints exposed by the API:
+  * /teams
+    * GET: returns the list of non-deleted teams. Takes up to three optional parameters:
+      * page: the page number to return out of the selected teams. Default is 1.
+      * skillsetMask: a bit mask identifying which skills to filter by. Default is 0 (i.e. no filter). Valid range: 0 to ???.
+      * order: whether to sort the selected teams in any way. Default is 'asc'. Valid range: 'asc' (ascending), 'desc' (descending) and 'random' (duh).
+    * POST: creates a new team linked to the logged-in user (requires an authorization header). Takes one mandatory parameter:
+      * teamDto: a TeamDto object containing the team's details. User's name and ID are automatically linked using the authorization details.
+  * /teams/mine
+    * GET: returns the logged-in user's team (if any). Accepts no parameters.
+    * PUT: updates the logged-in user's team (if any). Requires an authorization header and takes one mandatory parameter:
+      * teamDto: a TeamDto object containing the team's updated details.
+    * DELETE: deletes the logged-in user's team (if any). Requires an authorization header.
+  * /teams/report
+    * POST: reports/flags a team. Requires an authorization header (no anonymous reporting) and takes one mandatory parameter:
+      * teamId: the ID of the team to report.
+
+#### Admin
+
+There are currently three Admin-related endpoints exposed by the API (note that all of them check whether the user making the request is an admin):
+  * /admin/reports
+    * GET: returns a list of the teams with active reports.
+  * /admin/delete-team
+    * DELETE: marks a team as deleted. Takes one mandatory parameter:
+      * teamId: the ID of the team to delete.
+  * admin/ban-user
+    * POST: marks a user as banned and their team as deleted (if any). Takes one mandatory parameter:
+      * userId: the discord ID of the user to ban
+
 ### Troubleshooting
 
 - If you should be tempted to use IntelliJ with WSL... well, you better know what you're doing. 
