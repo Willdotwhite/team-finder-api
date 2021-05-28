@@ -144,13 +144,16 @@ class AdminController(
 
     fun clearCache(userName: String) {
         if (cacheManager == null) {
+            logger.info("[${ADMIN_TAG}] [CACHE] No cache manager detected/hydrated on cache clear attempt")
             return
         }
 
-        logger.info("[${ADMIN_TAG}] $userName has actioned cache clear")
+        logger.info("[${ADMIN_TAG}] [CACHE] $userName has actioned cache clear")
 
         // Clear all caches
         for (name in cacheManager.cacheNames) {
+            logger.info("[${ADMIN_TAG}] [CACHE] Clearing $name cache")
+
             cacheManager.getCache(name)?.clear()
         }
     }
