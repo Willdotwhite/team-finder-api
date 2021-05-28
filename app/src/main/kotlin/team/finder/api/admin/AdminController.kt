@@ -39,6 +39,24 @@ class AdminController(
         return ResponseEntity(teamsService.getTeamsWithActiveReports(), HttpStatus.OK)
     }
 
+    @PostMapping("/admin/reports/clear")
+    fun clearReports(@RequestParam("teamId") teamId: Long) : ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        val teamToRedeem = teamsService.getTeamById(teamId) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        if (teamToRedeem.reportCount == 0) {
+            // Return early to save on unnecessary DB Update
+            return ResponseEntity(teamToRedeem, HttpStatus.OK)
+        }
+
+        teamToRedeem.reportCount = 0
+        teamsService.saveTeam(teamToRedeem)
+
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has cleared reports for Team ${teamToRedeem.id}")
+
+        return ResponseEntity(teamToRedeem, HttpStatus.OK)
+    }
+
     @DeleteMapping("/admin/delete-team")
     fun deleteTeam(@RequestParam("teamId") idOfTeamToBan: Long) : ResponseEntity<Any> {
         val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
@@ -50,7 +68,7 @@ class AdminController(
         logger.info("[${ADMIN_TAG}] ${adminUser.name} has deleted Team ${teamToDelete.id}")
 
         // Clear Teams cache to remove any offensive material
-        clearCache()
+        clearCache(adminUser.name)
 
         return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
@@ -59,7 +77,7 @@ class AdminController(
     fun reinstateTeam(@RequestParam("teamId") idOfTeamToRedeem: Long) : ResponseEntity<Any> {
         val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
-        val teamToRedeem = teamsService.getTeamById(idOfTeamToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        val teamToRedeem = teamsService.getDeletedTeamById(idOfTeamToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         teamToRedeem.deletedAt = null
         teamsService.saveTeam(teamToRedeem)
 
@@ -79,6 +97,11 @@ class AdminController(
             return ResponseEntity(HttpStatus.CONFLICT)
         }
 
+        if (userToBan.isBanned) {
+            // Return early to save on unnecessary DB Update
+            return ResponseEntity(userToBan, HttpStatus.OK)
+        }
+
         userToBan.isBanned = true
         usersService.saveUser(userToBan)
 
@@ -94,7 +117,10 @@ class AdminController(
     }
 
     @PostMapping("/admin/redeem-user")
-    fun redeemUser(@RequestParam("userId") discordIdOfUserToRedeem: String): ResponseEntity<Any> {
+    fun redeemUser(
+        @RequestParam("userId") discordIdOfUserToRedeem: String,
+        @RequestParam("reinstateTeam", defaultValue = "false") shouldReinstateTeam: Boolean
+    ): ResponseEntity<Any> {
         val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
         val userToRedeem = usersService.getUser(discordIdOfUserToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
@@ -106,22 +132,29 @@ class AdminController(
 
         // @todo should we always re-instate the team automatically? Maybe they were banned for a bad team but are being given a second chance (in which case we shouldn't reinstate the team)
         // Re-instate deleted team as well (if any)
-        //val teamCreatedByUser = teamsService.getTeamByAuthorId(userToRedeem.discordId)
-        //if (teamCreatedByUser != null) {
-        //    reinstateTeam(teamCreatedByUser.id)
-        //}
+        if (shouldReinstateTeam) {
+            val teamCreatedByUser = teamsService.getDeletedTeamByAuthorId(userToRedeem.discordId)
+            if (teamCreatedByUser != null) {
+                reinstateTeam(teamCreatedByUser.id)
+            }
+        }
 
         return ResponseEntity(userToRedeem, HttpStatus.OK)
     }
 
-    fun clearCache() {
+    fun clearCache(userName: String) {
         if (cacheManager == null) {
+            logger.info("[${ADMIN_TAG}] [CACHE] No cache manager detected/hydrated on cache clear attempt")
             return
         }
 
+        logger.info("[${ADMIN_TAG}] [CACHE] $userName has actioned cache clear")
+
         // Clear all caches
         for (name in cacheManager.cacheNames) {
-            cacheManager.getCache(name)?.clear()
+            logger.info("[${ADMIN_TAG}] [CACHE] Clearing $name cache")
+
+            cacheManager.getCache(name)?.invalidate()
         }
     }
 
