@@ -154,7 +154,7 @@ class AdminController(
         for (name in cacheManager.cacheNames) {
             logger.info("[${ADMIN_TAG}] [CACHE] Clearing $name cache")
 
-            cacheManager.getCache(name)?.clear()
+            cacheManager.getCache(name)?.invalidate()
         }
     }
 
