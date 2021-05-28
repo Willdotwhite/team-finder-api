@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import team.finder.api.teams.TeamsService
+import team.finder.api.users.User
 import team.finder.api.users.UsersService
 import team.finder.api.utils.AuthUtil
 import team.finder.api.utils.TimestampUtils
@@ -25,30 +26,28 @@ class AdminController(
 
     private val logger: Logger = LoggerFactory.getLogger(AdminController::class.java)
 
-    @GetMapping("/admin/reports")
-    fun reports(): ResponseEntity<Any> {
+    private fun getAuthorisedUser() : User? {
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
-        if (user == null || !user.isAdmin) {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
-        }
+        return if (user?.isAdmin == true) user else null
+    }
+
+    @GetMapping("/admin/reports")
+    fun reports(): ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
         return ResponseEntity(teamsService.getTeamsWithActiveReports(), HttpStatus.OK)
     }
 
     @DeleteMapping("/admin/delete-team")
     fun deleteTeam(@RequestParam("teamId") idOfTeamToBan: Long) : ResponseEntity<Any> {
-        val userDetails = AuthUtil.getUserDetails()
-        val user = usersService.getUser(userDetails.discordId)
-        if (user == null || !user.isAdmin) {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
-        }
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
         val teamToDelete = teamsService.getTeamById(idOfTeamToBan) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         teamToDelete.deletedAt = TimestampUtils.getCurrentTimeStamp()
         teamsService.saveTeam(teamToDelete)
 
-        logger.info("[ADMIN] ${user.name} has deleted Team ${teamToDelete.id}")
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has deleted Team ${teamToDelete.id}")
 
         // Clear Teams cache to remove any offensive material
         clearCache()
@@ -56,13 +55,22 @@ class AdminController(
         return ResponseEntity(teamToDelete, HttpStatus.OK)
     }
 
+    @PostMapping("/admin/reinstate-team")
+    fun reinstateTeam(@RequestParam("teamId") idOfTeamToRedeem: Long) : ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        val teamToRedeem = teamsService.getTeamById(idOfTeamToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        teamToRedeem.deletedAt = null
+        teamsService.saveTeam(teamToRedeem)
+
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has reinstated Team ${teamToRedeem.id}")
+
+        return ResponseEntity(teamToRedeem, HttpStatus.OK)
+    }
+
     @PostMapping("/admin/ban-user")
     fun banUser(@RequestParam("userId") discordIdOfUserToBan: String): ResponseEntity<Any> {
-        val userDetails = AuthUtil.getUserDetails()
-        val user = usersService.getUser(userDetails.discordId)
-        if (user == null || !user.isAdmin) {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
-        }
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
         val userToBan = usersService.getUser(discordIdOfUserToBan) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
@@ -74,7 +82,7 @@ class AdminController(
         userToBan.isBanned = true
         usersService.saveUser(userToBan)
 
-        logger.info("[ADMIN] ${user.name} has banned User ${userToBan.discordId}")
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has banned User ${userToBan.discordId}")
 
         // Delete current team as well
         val teamCreatedByUser = teamsService.getTeamByAuthorId(userToBan.discordId)
@@ -83,6 +91,27 @@ class AdminController(
         }
 
         return ResponseEntity(userToBan, HttpStatus.OK)
+    }
+
+    @PostMapping("/admin/redeem-user")
+    fun redeemUser(@RequestParam("userId") discordIdOfUserToRedeem: String): ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        val userToRedeem = usersService.getUser(discordIdOfUserToRedeem) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        userToRedeem.isBanned = false
+        usersService.saveUser(userToRedeem)
+
+        logger.info("[${ADMIN_TAG}] ${adminUser.name} has redeemed User ${userToRedeem.discordId}")
+
+        // @todo should we always re-instate the team automatically? Maybe they were banned for a bad team but are being given a second chance (in which case we shouldn't reinstate the team)
+        // Re-instate deleted team as well (if any)
+        //val teamCreatedByUser = teamsService.getTeamByAuthorId(userToRedeem.discordId)
+        //if (teamCreatedByUser != null) {
+        //    reinstateTeam(teamCreatedByUser.id)
+        //}
+
+        return ResponseEntity(userToRedeem, HttpStatus.OK)
     }
 
     fun clearCache() {
@@ -97,3 +126,5 @@ class AdminController(
     }
 
 }
+
+private val ADMIN_TAG : String = "ADMIN"
