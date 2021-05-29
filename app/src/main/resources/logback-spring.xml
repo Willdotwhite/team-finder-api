@@ -1,28 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss}] %highlight([%-5level]) %-18logger{24} - %msg %ex{2}%nopex%n</pattern>
-        </encoder>
+    <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
-
-<!--    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
-<!--        <file>application.log</file>-->
-<!--        <encoder>-->
-<!--            <pattern>[%d{HH:mm:ss}] [%-5level] %-18logger{24} - %msg%n</pattern>-->
-<!--        </encoder>-->
-<!--         -->
-<!--        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
-<!--            <fileNamePattern>application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>-->
-<!--            <maxFileSize>1MB</maxFileSize>-->
-<!--            <maxHistory>30</maxHistory>-->
-<!--            <totalSizeCap>10MB</totalSizeCap>-->
-<!--            <cleanHistoryOnStart>true</cleanHistoryOnStart>-->
-<!--        </rollingPolicy>-->
-<!--    </appender>-->
-
     <root level="INFO">
-        <appender-ref ref="Console" />
-<!--        <appender-ref ref="RollingFile" />-->
+        <appender-ref ref="jsonConsoleAppender"/>
     </root>
 </configuration>
