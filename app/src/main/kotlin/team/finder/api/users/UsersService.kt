@@ -8,6 +8,6 @@ class UsersService(val repository: UsersRepository) {
 
     fun getUser(discordId: String) = repository.findByDiscordId(discordId)
     fun saveUser(user: User) = repository.save(user)
-    fun getBannedUsers() = repository.findByIsBannedIsTrue()
+    fun getBannedUsers() = repository.findByIsBanned(true)
 
 }
