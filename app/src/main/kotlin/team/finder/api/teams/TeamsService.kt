@@ -52,7 +52,9 @@ class TeamsService(val repository: TeamsRepository) {
     }
 
     fun getTeamByAuthorId(authorId: String): Team? = repository.getTeamByAuthorId(authorId)
+    fun getDeletedTeamByAuthorId(authorId: String): Team? = repository.findByAuthorIdAndDeletedAtIsNotNull(authorId)
     fun getTeamById(teamId: Long): Team? = repository.findByIdAndDeletedAtIsNull(teamId)
+    fun getDeletedTeamById(teamId: Long): Team? = repository.findByIdAndDeletedAtIsNotNull(teamId)
     fun getTeamsWithActiveReports(): List<Team> = repository.getTeamsWithReports()
 
     fun updateTeam(authorId: String, description: String, skillsetMask: Int, languages: Collection<Language>): Team? {
