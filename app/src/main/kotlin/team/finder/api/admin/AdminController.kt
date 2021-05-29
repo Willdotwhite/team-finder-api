@@ -39,6 +39,13 @@ class AdminController(
         return ResponseEntity(teamsService.getTeamsWithActiveReports(), HttpStatus.OK)
     }
 
+    @GetMapping("/admin/banned-users")
+    fun bannedUsers(): ResponseEntity<Any> {
+        val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+
+        return ResponseEntity(usersService.getBannedUsers(), HttpStatus.OK)
+    }
+
     @PostMapping("/admin/reports/clear")
     fun clearReports(@RequestParam("teamId") teamId: Long) : ResponseEntity<Any> {
         val adminUser = getAuthorisedUser() ?: return ResponseEntity(HttpStatus.NOT_FOUND)

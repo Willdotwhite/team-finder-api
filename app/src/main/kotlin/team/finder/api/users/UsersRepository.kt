@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 interface UsersRepository : CrudRepository<User, String> {
 
     fun findByDiscordId(discordId: String): User?
+    fun findByIsBanned(isBanned: Boolean): List<User>
 }
