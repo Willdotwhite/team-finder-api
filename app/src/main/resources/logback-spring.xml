@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Log info direct to console for ease of local developlent -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}] %highlight([%-5level]) %-18logger{24} - %msg %ex{2}%nopex%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Log pure JSON to file on disk for Elasticsearch integration -->
+    <appender name="jsonFileAppender" class="ch.qos.logback.core.FileAppender">
+        <file>application.log</file>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
     <root level="INFO">
-        <appender-ref ref="jsonConsoleAppender"/>
+        <appender-ref ref="console"/>
+        <appender-ref ref="jsonFileAppender"/>
     </root>
 </configuration>
