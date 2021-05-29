@@ -101,6 +101,8 @@ There are currently three Team-related endpoints exposed by the API:
 There are currently five Admin-related endpoints exposed by the API (note that all of them check whether the user making the request is an admin):
   * /admin/reports
     * GET: returns a list of the teams with active reports.
+  * /admin/banned-users
+    * GET: returns a list of the users who have been marked as banned.
   * /admin/reports/clear
     * POST: resets a team's report count to 0. Takes one mandatory parameter:
         * teamId: the ID of the team to update.
