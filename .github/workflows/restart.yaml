@@ -1,4 +1,4 @@
-name: Build and Deploy API
+name: Application Restart
 
 on:
   # Allows you to run this workflow manually from the Actions tab
@@ -15,15 +15,6 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
-      - name: Build JAR
-        run: ./gradlew build && ./gradlew jar
-
-      - name: Upload artifact to Workflow
-        uses: actions/upload-artifact@v2
-        with:
-          name: app.jar
-          path: ${{ github.workspace }}/app/build/libs/app.jar
-
       - name: Create SSH key
         run: |
           mkdir -p ~/.ssh/
@@ -35,11 +26,6 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
           SSH_KEY_PATH: ${{ github.workspace }}/private.key
-
-      - name: Deploy to server
-        run: |
-          scp -i ${{ github.workspace }}/private.key ${{ github.workspace }}/app/build/libs/app.jar pipeline@${{ secrets.SSH_HOST }}:${{ secrets.API_JAR_LOCATION }}
-        shell: bash
 
       - name: Restart application
         run: |
