@@ -28,7 +28,7 @@ class TeamsController(
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
     ) : ResponseEntity<Any> {
         val pageIdx = if (page > 0) page else 1
-        val boundedSkillsetMask = if (skillsetMask in 1..127) skillsetMask else 0
+        val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
         return ResponseEntity(service.getTeams(pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
     }
