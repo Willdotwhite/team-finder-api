@@ -31,7 +31,7 @@ class TeamsController(
         val pageIdx = if (page > 0) page else 1
         val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
-        val sanitisedQuery = sanitiseFreetextInput(query)
+        val sanitisedQuery = sanitiseFreetextInput(query.trim())
 
         return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
     }
