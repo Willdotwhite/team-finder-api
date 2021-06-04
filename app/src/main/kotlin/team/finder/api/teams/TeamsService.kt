@@ -3,6 +3,8 @@ package team.finder.api.teams
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -12,6 +14,8 @@ import team.finder.api.utils.TimestampUtils
 
 @Service
 class TeamsService(val repository: TeamsRepository) {
+
+    private val logger: Logger = LoggerFactory.getLogger(TeamsService::class.java)
 
     /**
      * How many records should be returned per page?
@@ -42,6 +46,10 @@ class TeamsService(val repository: TeamsRepository) {
 
         queryTimer.record {
             teams = if (willPerformNativeQuery) {
+                if (query.isNotEmpty()) {
+                    logger.info("[QUERY] Custom query used: $query")
+                }
+
                 // Convert "a+b+c" into MySQL-valid insertion for keyword group searching
                 val queryInsertString = query.split("-").joinToString("|", "(", ")")
 
