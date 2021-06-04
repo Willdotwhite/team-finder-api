@@ -112,10 +112,9 @@ class TeamsController(
         return input
             .toLowerCase()                          // Standardise casing for cache
             .replace(Regex("[=;,'\"]"), " ")        // Remove some SQL-specific characters for crude sanitisation
-            .replace(Regex("[^a-z0-9_ ]"), "")      // Remove all unwanted search characters (RIP emoji)
             .split(" ")                             // Break from Spring @RequestParam formatting for sorting
             .distinct()                             // Filter out duplicate entries
-            .filterNot { it == "" }                  // Filter out whitespace
+            .filter { it.all { it.isLetterOrDigit() } } // Remove all unwanted search characters
             .sortedBy { it }                        // Sort terms alphabetically
             .joinToString("-")                      // Return to single string for cache entry
     }
