@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import team.finder.api.utils.TimestampUtils
@@ -27,7 +26,7 @@ class TeamsService(val repository: TeamsRepository) {
     fun saveTeam(team: Team) = repository.save(team) // Yeah, I know...
 
     @Cacheable("teams")
-    fun getTeams(pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
+    fun getTeams(query: String, pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
         queryCounter.increment()
 
         // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
@@ -42,9 +41,9 @@ class TeamsService(val repository: TeamsRepository) {
 
         queryTimer.record {
             teams = if (willPerformNativeQuery) {
-                repository.getTeams(queryPageable, skillsetMask)
+                repository.getTeams(queryPageable, query, skillsetMask)
             } else {
-                repository.getTeams(queryPageable)
+                repository.findByDeletedAtIsNullAndDescriptionContains(queryPageable, query)
             }
         }
 

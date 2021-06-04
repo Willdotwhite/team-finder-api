@@ -26,11 +26,13 @@ class TeamsController(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
+        @RequestParam(defaultValue = "", name = "query") query: String
     ) : ResponseEntity<Any> {
         val pageIdx = if (page > 0) page else 1
         val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
-        return ResponseEntity(service.getTeams(pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
+        val sanitisedQuery = query.toLowerCase().replace(Regex("[=;, ]"), "-").replace(Regex("/[^a-z0-9_]/g"), "")
+        return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
     }
 
     @PostMapping("/teams")

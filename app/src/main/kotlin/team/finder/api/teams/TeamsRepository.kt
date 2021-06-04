@@ -10,12 +10,11 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface TeamsRepository : PagingAndSortingRepository<Team, Long> {
 
-    @Query("SELECT t FROM Team t WHERE t.deletedAt IS NULL")
-    fun getTeams(pageable: Pageable): List<Team>
+    fun findByDeletedAtIsNullAndDescriptionContains(pageable: Pageable, query: String): List<Team>
 
     // JPA doesn't handle bitwise OR very well, so a native query is the easiest way to save the hassle
-    @Query("SELECT * FROM team t WHERE (t.skillset_mask & :skillsetMask > 0) AND t.deleted_at IS NULL", nativeQuery = true)
-    fun getTeams(pageable: Pageable, skillsetMask: Int): List<Team>
+    @Query("SELECT * FROM team t WHERE (t.skillset_mask & :skillsetMask > 0) AND t.deleted_at IS NULL AND t.description LIKE %:query%", nativeQuery = true)
+    fun getTeams(pageable: Pageable, query: String, skillsetMask: Int): List<Team>
 
     @Query("SELECT t FROM Team t WHERE t.authorId = :id AND t.deletedAt IS NULL")
     fun getTeamByAuthorId(id: String): Team?
