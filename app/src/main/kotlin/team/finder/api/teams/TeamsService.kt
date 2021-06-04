@@ -29,8 +29,9 @@ class TeamsService(val repository: TeamsRepository) {
     fun getTeams(query: String, pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
         queryCounter.increment()
 
-        // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
-        val willPerformNativeQuery: Boolean = skillsetMask > 0
+        // If we have a 'query' param to search for, use the native query option for ease of expanding multiple
+        // keywords into a single query statement
+        val willPerformNativeQuery: Boolean = skillsetMask > 0 || query.isNotEmpty()
         val sort: Sort = getSort(sortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
@@ -41,7 +42,13 @@ class TeamsService(val repository: TeamsRepository) {
 
         queryTimer.record {
             teams = if (willPerformNativeQuery) {
-                repository.getTeams(queryPageable, query, skillsetMask)
+                // Convert "a+b+c" into MySQL-valid insertion for keyword group searching
+                val queryInsertString = query.split("-").joinToString("|", "(", ")")
+
+                // If we're using the native query for a given keyword search term, use a mask of b111... to allow everything
+                val querySkillsetMask = if (query.isNotEmpty()) 255 else skillsetMask
+
+                repository.getTeams(queryPageable, queryInsertString, querySkillsetMask)
             } else {
                 repository.findByDeletedAtIsNullAndDescriptionContains(queryPageable, query)
             }

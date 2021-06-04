@@ -31,7 +31,8 @@ class TeamsController(
         val pageIdx = if (page > 0) page else 1
         val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
-        val sanitisedQuery = query.toLowerCase().replace(Regex("[=;, ]"), "-").replace(Regex("/[^a-z0-9_]/g"), "")
+        val sanitisedQuery = sanitiseFreetextInput(query)
+
         return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
     }
 
@@ -105,5 +106,15 @@ class TeamsController(
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
         return user != null && user.isBanned
+    }
+
+    private fun sanitiseFreetextInput(input: String) : String {
+        return input
+            .toLowerCase()                          // Standardise casing for cache
+            .replace(Regex("[=;,'\"]"), " ")        // Remove some SQL-specific characters for crude sanitisation
+            .replace(Regex("/[^a-z0-9_]/g"), "")    // Remove all unwanted search characters (RIP emoji)
+            .split(" ")                             // Break from Spring @RequestParam formatting for sorting
+            .sortedBy { it }                        // Sort terms alphabetically
+            .joinToString("-")                      // Return to single string for cache entry
     }
 }
