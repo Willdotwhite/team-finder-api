@@ -46,7 +46,7 @@ class TeamsService(val repository: TeamsRepository) {
                 val queryInsertString = query.split("-").joinToString("|", "(", ")")
 
                 // If we're using the native query for a given keyword search term, use a mask of b111... to allow everything
-                val querySkillsetMask = if (query.isNotEmpty()) 255 else skillsetMask
+                val querySkillsetMask = if (query.isNotEmpty() && skillsetMask == 0) 255 else skillsetMask
 
                 repository.getTeams(queryPageable, queryInsertString, querySkillsetMask)
             } else {
