@@ -3,9 +3,10 @@ package team.finder.api.teams
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.Timer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import team.finder.api.utils.TimestampUtils
@@ -13,6 +14,8 @@ import team.finder.api.utils.TimestampUtils
 
 @Service
 class TeamsService(val repository: TeamsRepository) {
+
+    private val logger: Logger = LoggerFactory.getLogger(TeamsService::class.java)
 
     /**
      * How many records should be returned per page?
@@ -27,11 +30,12 @@ class TeamsService(val repository: TeamsRepository) {
     fun saveTeam(team: Team) = repository.save(team) // Yeah, I know...
 
     @Cacheable("teams")
-    fun getTeams(pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
+    fun getTeams(query: String, pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
         queryCounter.increment()
 
-        // A power-of-2 mask being set to 0 is meaningless - AKA "do not use"
-        val willPerformNativeQuery: Boolean = skillsetMask > 0
+        // If we have a 'query' param to search for, use the native query option for ease of expanding multiple
+        // keywords into a single query statement
+        val willPerformNativeQuery: Boolean = skillsetMask > 0 || query.isNotEmpty()
         val sort: Sort = getSort(sortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
@@ -42,9 +46,19 @@ class TeamsService(val repository: TeamsRepository) {
 
         queryTimer.record {
             teams = if (willPerformNativeQuery) {
-                repository.getTeams(queryPageable, skillsetMask)
+                if (query.isNotEmpty()) {
+                    logger.info("[QUERY] Custom query used: $query")
+                }
+
+                // Convert "a+b+c" into MySQL-valid insertion for keyword group searching
+                val queryInsertString = query.split("-").joinToString("|", "(", ")")
+
+                // If we're using the native query for a given keyword search term, use a mask of b111... to allow everything
+                val querySkillsetMask = if (query.isNotEmpty() && skillsetMask == 0) 255 else skillsetMask
+
+                repository.getTeams(queryPageable, queryInsertString, querySkillsetMask)
             } else {
-                repository.getTeams(queryPageable)
+                repository.findByDeletedAtIsNullAndDescriptionContains(queryPageable, query)
             }
         }
 

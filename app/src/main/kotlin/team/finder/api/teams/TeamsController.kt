@@ -26,11 +26,14 @@ class TeamsController(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
+        @RequestParam(defaultValue = "", name = "query") query: String
     ) : ResponseEntity<Any> {
         val pageIdx = if (page > 0) page else 1
         val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
-        return ResponseEntity(service.getTeams(pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
+        val sanitisedQuery = sanitiseFreetextInput(query.trim())
+
+        return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
     }
 
     @PostMapping("/teams")
@@ -103,5 +106,16 @@ class TeamsController(
         val userDetails = AuthUtil.getUserDetails()
         val user = usersService.getUser(userDetails.discordId)
         return user != null && user.isBanned
+    }
+
+    private fun sanitiseFreetextInput(input: String) : String {
+        return input
+            .toLowerCase()                          // Standardise casing for cache
+            .replace(Regex("[=;,'\"]"), " ")        // Remove some SQL-specific characters for crude sanitisation
+            .split(" ")                             // Break from Spring @RequestParam formatting for sorting
+            .distinct()                             // Filter out duplicate entries
+            .filter { it.all { it.isLetterOrDigit() } } // Remove all unwanted search characters
+            .sortedBy { it }                        // Sort terms alphabetically
+            .joinToString("-")                      // Return to single string for cache entry
     }
 }
