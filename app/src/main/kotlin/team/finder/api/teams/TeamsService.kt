@@ -30,12 +30,12 @@ class TeamsService(val repository: TeamsRepository) {
     fun saveTeam(team: Team) = repository.save(team) // Yeah, I know...
 
     @Cacheable("teams")
-    fun getTeams(query: String, pageIdx: Int, skillsetMask: Int, sortingOption: SortingOptions): List<Team> {
+    fun getTeams(query: String, pageIdx: Int, skillsetMask: Int, languages: String, sortingOption: SortingOptions): List<Team> {
         queryCounter.increment()
 
         // If we have a 'query' param to search for, use the native query option for ease of expanding multiple
         // keywords into a single query statement
-        val willPerformNativeQuery: Boolean = skillsetMask > 0 || query.isNotEmpty()
+        val willPerformNativeQuery: Boolean = skillsetMask > 0 || query.isNotEmpty() || languages.isNotEmpty()
         val sort: Sort = getSort(sortingOption, willPerformNativeQuery)
 
         // Pagination needs to be offset by -1 from expectations, but can't be set below 0
@@ -50,21 +50,23 @@ class TeamsService(val repository: TeamsRepository) {
                     logger.info("[QUERY] Custom query used: $query")
                 }
 
+                val languageInsertString = languages.split("+").joinToString("|", "(", ")")
+
                 // The query term will be wrapped in \' characters by JPA, so we need to set the terms of the LIKE here
                 // i.e. LIKE '%game%' for a global search
                 val queryTerms = query.split("-").map { "%$it%" }
 
-                // If we're using the native query for a given keyword search term, use a mask of b111... to allow everything
-                val querySkillsetMask = if (query.isNotEmpty() && skillsetMask == 0) 255 else skillsetMask
+                // If we're using the native query for a given keyword/language search, use a mask of b111... to allow everything
+                val querySkillsetMask = if (skillsetMask == 0) 255 else skillsetMask
 
                 // There's a nicer way to do it, but I have no idea how
                 when (queryTerms.size) {
-                    1 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0]) // An empty search becomes "LIKE '%%'", and gets everything
-                    2 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1])
-                    3 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2])
-                    4 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3])
-                    5 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
-                    else -> repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
+                    1 ->    repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0]) // An empty search becomes "LIKE '%%'", and gets everything
+                    2 ->    repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0], queryTerms[1])
+                    3 ->    repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0], queryTerms[1], queryTerms[2])
+                    4 ->    repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3])
+                    5 ->    repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
+                    else -> repository.getTeams(queryPageable, querySkillsetMask, languageInsertString, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
                 }
             } else {
                 repository.findByDeletedAtIsNullAndDescriptionContains(queryPageable, query)
