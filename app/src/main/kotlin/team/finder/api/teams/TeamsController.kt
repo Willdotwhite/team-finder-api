@@ -116,7 +116,10 @@ class TeamsController(
             .replace(Regex("[=;,'\"+]"), " ")        // Remove some SQL-specific characters for crude sanitisation
             .split(" ")                             // Break from Spring @RequestParam formatting for sorting
             .distinct()                             // Filter out duplicate entries
-            .filter { it.all { it.isLetterOrDigit() } } // Remove all unwanted search characters
+            .filter { it.all {
+                it.isLetterOrDigit() ||             // Remove all unwanted search characters
+                it == '-'                           // Keep '-' characters for languages which include them (e.g. 'pt-BR')
+            } }
             .sortedBy { it }                        // Sort terms alphabetically
             .take(5)                                // Limit to five search terms max, for the sanity of this hack
             .joinToString("-")                      // Return to single string for cache entry
