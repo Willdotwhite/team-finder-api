@@ -50,7 +50,7 @@ class TeamsService(val repository: TeamsRepository) {
                     logger.info("[QUERY] Custom query used: $query")
                 }
 
-                val languageInsertString = languages.split("+").joinToString("|", "(", ")")
+                val languageInsertString = languages.split("-").joinToString("|", "(", ")")
 
                 // The query term will be wrapped in \' characters by JPA, so we need to set the terms of the LIKE here
                 // i.e. LIKE '%game%' for a global search
