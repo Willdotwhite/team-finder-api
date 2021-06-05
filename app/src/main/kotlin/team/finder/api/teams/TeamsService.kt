@@ -50,13 +50,22 @@ class TeamsService(val repository: TeamsRepository) {
                     logger.info("[QUERY] Custom query used: $query")
                 }
 
-                // Convert "a+b+c" into MySQL-valid insertion for keyword group searching
-                val queryInsertString = query.split("-").joinToString("|", "(", ")")
+                // The query term will be wrapped in \' characters by JPA, so we need to set the terms of the LIKE here
+                // i.e. LIKE '%game%' for a global search
+                val queryTerms = query.split("-").map { "%$it%" }
 
                 // If we're using the native query for a given keyword search term, use a mask of b111... to allow everything
                 val querySkillsetMask = if (query.isNotEmpty() && skillsetMask == 0) 255 else skillsetMask
 
-                repository.getTeams(queryPageable, queryInsertString, querySkillsetMask)
+                // There's a nicer way to do it, but I have no idea how
+                when (queryTerms.size) {
+                    1 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0]) // An empty search becomes "LIKE '%%'", and gets everything
+                    2 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1])
+                    3 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2])
+                    4 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3])
+                    5 ->    repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
+                    else -> repository.getTeams(queryPageable, querySkillsetMask, queryTerms[0], queryTerms[1], queryTerms[2], queryTerms[3], queryTerms[4])
+                }
             } else {
                 repository.findByDeletedAtIsNullAndDescriptionContains(queryPageable, query)
             }
