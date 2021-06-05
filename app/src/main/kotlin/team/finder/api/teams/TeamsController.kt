@@ -116,6 +116,7 @@ class TeamsController(
             .distinct()                             // Filter out duplicate entries
             .filter { it.all { it.isLetterOrDigit() } } // Remove all unwanted search characters
             .sortedBy { it }                        // Sort terms alphabetically
+            .take(5)                                // Limit to five search terms max, for the sanity of this hack
             .joinToString("-")                      // Return to single string for cache entry
     }
 }
