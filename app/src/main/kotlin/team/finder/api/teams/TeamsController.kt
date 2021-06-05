@@ -26,14 +26,16 @@ class TeamsController(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "0") skillsetMask: Int,
         @RequestParam(defaultValue = "asc", name = "order") strSortingOption: String,
+        @RequestParam(defaultValue = "", name = "languages") languages: String,
         @RequestParam(defaultValue = "", name = "query") query: String
     ) : ResponseEntity<Any> {
         val pageIdx = if (page > 0) page else 1
         val boundedSkillsetMask = if (skillsetMask in 1..255) skillsetMask else 0
         val sortType = service.getSortType(strSortingOption)
+        val orderedLanguages = sanitiseFreetextInput(languages)
         val sanitisedQuery = sanitiseFreetextInput(query.trim())
 
-        return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, sortType), HttpStatus.OK)
+        return ResponseEntity(service.getTeams(sanitisedQuery, pageIdx, boundedSkillsetMask, orderedLanguages, sortType), HttpStatus.OK)
     }
 
     @PostMapping("/teams")
@@ -111,7 +113,7 @@ class TeamsController(
     private fun sanitiseFreetextInput(input: String) : String {
         return input
             .toLowerCase()                          // Standardise casing for cache
-            .replace(Regex("[=;,'\"]"), " ")        // Remove some SQL-specific characters for crude sanitisation
+            .replace(Regex("[=;,'\"+]"), " ")        // Remove some SQL-specific characters for crude sanitisation
             .split(" ")                             // Break from Spring @RequestParam formatting for sorting
             .distinct()                             // Filter out duplicate entries
             .filter { it.all { it.isLetterOrDigit() } } // Remove all unwanted search characters
